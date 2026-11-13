@@ -1,0 +1,916 @@
+
+Running 20 tests using 1 worker
+
+  ✓   1 e2e/flow.spec.ts:66:1 › T01 entry: no session before acknowledgement and Ready (29.6s)
+  ✓   2 e2e/flow.spec.ts:79:1 › T02 start: rejected while disconnected, accepted when connected + ready (36.1s)
+  ✓   3 e2e/flow.spec.ts:92:1 › T03 canonical line is identical in conversation, hold, unfold, restore and reflection (41.9s)
+  ✓   4 e2e/flow.spec.ts:108:1 › T04 hold freezes Alex at M01 and shows no branch options (32.4s)
+  ✓   5 e2e/flow.spec.ts:127:1 › T05 unfold keeps the same room and labels both paths hypothetical (39.1s)
+  ✓   6 e2e/flow.spec.ts:150:3 › T06 branch A: approved dialogue, captions and persistent label (39.5s)
+  ✓   7 e2e/flow.spec.ts:150:3 › T07 branch B: approved dialogue, captions and persistent label (40.0s)
+  ✓   8 e2e/flow.spec.ts:179:1 › T08 restore repeat: A → R → B → R → A → R restores the exact original (data and 3D) (1.2m)
+  ✓   9 e2e/flow.spec.ts:201:1 › T09 safety: Pause and Leave in every live state, including while disconnected (1.2m)
+  ✓  10 e2e/flow.spec.ts:235:1 › T10 invalid commands are rejected and do not corrupt state (1.1m)
+  ✓  11 e2e/flow.spec.ts:258:1 › T11 disconnect mid-Explore halts; reconnect + explicit resume required (50.4s)
+  ✓  12 e2e/flow.spec.ts:277:1 › T12 reflection shows only visited paths, once each (56.5s)
+  ✓  13 e2e/flow.spec.ts:291:1 › T12b early end needs a justification and shows the empty state (36.0s)
+  ✓  14 e2e/flow.spec.ts:301:1 › T13 accessibility baseline: keyboard-only, captions, caption size, reduced motion, high contrast (1.1m)
+  ✓  15 e2e/flow.spec.ts:354:1 › T14 deliverability: runs from the local build with no external network requests (46.7s)
+  ✓  16 e2e/flow.spec.ts:369:1 › Participant view never contains clinician controls (34.4s)
+  ✓  17 e2e/flow.spec.ts:380:1 › Separate-window Director Desk drives the participant; closing it counts as link loss (34.5s)
+  ✓  18 e2e/flow.spec.ts:414:1 › VR UI: full journey by pointing at in-world panels (ray hit-testing) (51.7s)
+  ✓  19 e2e/flow.spec.ts:452:1 › VR UI: link loss shows the in-world notice with Leave, and no path choice (30.7s)
+  ✓  20 e2e/flow.spec.ts:477:1 › Relay: Desk on another "device" joins by code, drives Hold, and closing it halts the scene (28.8s)
+
+  Slow test file: e2e/flow.spec.ts (15.1m)
+  Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
+  20 passed (15.1m)
+{
+  "config": {
+    "argv": [
+      "/opt/node22/bin/node",
+      "/home/claude/living-scene/node_modules/.bin/playwright",
+      "test",
+      "--reporter=list,json"
+    ],
+    "configFile": "/home/claude/living-scene/playwright.config.ts",
+    "rootDir": "/home/claude/living-scene/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/home/claude/living-scene/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/home/claude/living-scene/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 90000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/home/claude/living-scene/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "",
+        "testDir": "/home/claude/living-scene/e2e",
+        "snapshotDir": "/home/claude/living-scene/e2e",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 90000,
+        "use": {
+          "baseURL": "http://localhost:4173",
+          "viewport": {
+            "width": 1600,
+            "height": 900
+          },
+          "launchOptions": {
+            "executablePath": "/usr/bin/google-chrome",
+            "args": [
+              "--use-angle=swiftshader",
+              "--enable-unsafe-swiftshader",
+              "--ignore-gpu-blocklist"
+            ]
+          }
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": ""
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.65.0",
+    "workers": 2,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "flow.spec.ts",
+      "file": "flow.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "T01 entry: no session before acknowledgement and Ready",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 29563,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-13T13:22:06.087Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f353db48c569834dc22b-4b31908e3ffd6791c105",
+          "file": "flow.spec.ts",
+          "line": 66,
+          "column": 1
+        },
+        {
+          "title": "T02 start: rejected while disconnected, accepted when connected + ready",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 36075,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-13T13:22:35.865Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f353db48c569834dc22b-1138b4503c784e35d529",
+          "file": "flow.spec.ts",
+          "line": 79,
+          "column": 1
+        },
+        {
+          "title": "T03 canonical line is identical in conversation, hold, unfold, restore and reflection",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 41864,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-13T13:23:11.985Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f353db48c569834dc22b-fdddfe66d7b4776d7863",
+          "file": "flow.spec.ts",
+          "line": 92,
+          "column": 1
+        },
+        {
+          "title": "T04 hold freezes Alex at M01 and shows no branch options",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 32397,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-13T13:23:53.901Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f353db48c569834dc22b-7de9f9d9fbb0e7b2c229",
+          "file": "flow.spec.ts",
+          "line": 108,
+          "column": 1
+        },
+        {
+          "title": "T05 unfold keeps the same room and labels both paths hypothetical",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 39143,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-13T13:24:26.336Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f353db48c569834dc22b-6a08a188764087048763",
+          "file": "flow.spec.ts",
+          "line": 127,
+          "column": 1
+        },
+        {
+          "title": "T06 branch A: approved dialogue, captions and persistent label",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 39498,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-13T13:25:05.505Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f353db48c569834dc22b-3893156f3241846333c6",
+          "file": "flow.spec.ts",
+          "line": 150,
+          "column": 3
+        },
+        {
+          "title": "T07 branch B: approved dialogue, captions and persistent label",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 39953,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-13T13:25:45.034Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f353db48c569834dc22b-8ea24d4c1d005def1f1a",
+          "file": "flow.spec.ts",
+          "line": 150,
+          "column": 3
+        },
+        {
+          "title": "T08 restore repeat: A → R → B → R → A → R restores the exact original (data and 3D)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 270000,
+              "annotations": [
+                {
+                  "type": "slow",
+                  "location": {
+                    "file": "/home/claude/living-scene/e2e/flow.spec.ts",
+                    "line": 180,
+                    "column": 8
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 70385,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-13T13:26:25.004Z",
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/home/claude/living-scene/e2e/flow.spec.ts",
+                        "line": 180,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f353db48c569834dc22b-5bb8ef678720ae5c030b",
+          "file": "flow.spec.ts",
+          "line": 179,
+          "column": 1
+        },
+        {
+          "title": "T09 safety: Pause and Leave in every live state, including while disconnected",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 270000,
+              "annotations": [
+                {
+                  "type": "slow",
+                  "location": {
+                    "file": "/home/claude/living-scene/e2e/flow.spec.ts",
+                    "line": 202,
+                    "column": 8
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 73275,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-13T13:27:35.441Z",
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/home/claude/living-scene/e2e/flow.spec.ts",
+                        "line": 202,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f353db48c569834dc22b-6956c59cba1cb1bebfce",
+          "file": "flow.spec.ts",
+          "line": 201,
+          "column": 1
+        },
+        {
+          "title": "T10 invalid commands are rejected and do not corrupt state",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 270000,
+              "annotations": [
+                {
+                  "type": "slow",
+                  "location": {
+                    "file": "/home/claude/living-scene/e2e/flow.spec.ts",
+                    "line": 236,
+                    "column": 8
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 66078,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-13T13:28:48.740Z",
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/home/claude/living-scene/e2e/flow.spec.ts",
+                        "line": 236,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f353db48c569834dc22b-1dbe0334d49e5a77fb90",
+          "file": "flow.spec.ts",
+          "line": 235,
+          "column": 1
+        },
+        {
+          "title": "T11 disconnect mid-Explore halts; reconnect + explicit resume required",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 50362,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-13T13:29:54.847Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f353db48c569834dc22b-561f94b56618f009d6d0",
+          "file": "flow.spec.ts",
+          "line": 258,
+          "column": 1
+        },
+        {
+          "title": "T12 reflection shows only visited paths, once each",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 56489,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-13T13:30:45.264Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f353db48c569834dc22b-bf07410cbbb6600f0c0a",
+          "file": "flow.spec.ts",
+          "line": 277,
+          "column": 1
+        },
+        {
+          "title": "T12b early end needs a justification and shows the empty state",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 35995,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-13T13:31:41.783Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f353db48c569834dc22b-b942705bbbabad9be20c",
+          "file": "flow.spec.ts",
+          "line": 291,
+          "column": 1
+        },
+        {
+          "title": "T13 accessibility baseline: keyboard-only, captions, caption size, reduced motion, high contrast",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 67673,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-13T13:32:17.787Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f353db48c569834dc22b-9849487357cddcf56342",
+          "file": "flow.spec.ts",
+          "line": 301,
+          "column": 1
+        },
+        {
+          "title": "T14 deliverability: runs from the local build with no external network requests",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 46694,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-13T13:33:25.470Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f353db48c569834dc22b-97de014f8abfd0622786",
+          "file": "flow.spec.ts",
+          "line": 354,
+          "column": 1
+        },
+        {
+          "title": "Participant view never contains clinician controls",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 34368,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-13T13:34:12.189Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f353db48c569834dc22b-8cd7a9dacc3bf6b493e4",
+          "file": "flow.spec.ts",
+          "line": 369,
+          "column": 1
+        },
+        {
+          "title": "Separate-window Director Desk drives the participant; closing it counts as link loss",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 34531,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-13T13:34:46.565Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f353db48c569834dc22b-a4208ef7bf4af9edbe10",
+          "file": "flow.spec.ts",
+          "line": 380,
+          "column": 1
+        },
+        {
+          "title": "VR UI: full journey by pointing at in-world panels (ray hit-testing)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 270000,
+              "annotations": [
+                {
+                  "type": "slow",
+                  "location": {
+                    "file": "/home/claude/living-scene/e2e/flow.spec.ts",
+                    "line": 415,
+                    "column": 8
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 51664,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-13T13:35:21.113Z",
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/home/claude/living-scene/e2e/flow.spec.ts",
+                        "line": 415,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f353db48c569834dc22b-59b82d8b63b066be1752",
+          "file": "flow.spec.ts",
+          "line": 414,
+          "column": 1
+        },
+        {
+          "title": "VR UI: link loss shows the in-world notice with Leave, and no path choice",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 30730,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-13T13:36:12.789Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f353db48c569834dc22b-01607d9d9de847b8323e",
+          "file": "flow.spec.ts",
+          "line": 452,
+          "column": 1
+        },
+        {
+          "title": "Relay: Desk on another \"device\" joins by code, drives Hold, and closing it halts the scene",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 270000,
+              "annotations": [
+                {
+                  "type": "slow",
+                  "location": {
+                    "file": "/home/claude/living-scene/e2e/flow.spec.ts",
+                    "line": 478,
+                    "column": 8
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 28792,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-13T13:36:43.529Z",
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/home/claude/living-scene/e2e/flow.spec.ts",
+                        "line": 478,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f353db48c569834dc22b-2c11db1aaec5b542d48c",
+          "file": "flow.spec.ts",
+          "line": 477,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-13T13:22:05.663Z",
+    "duration": 906768.512,
+    "expected": 20,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}
+exit 0

@@ -1,0 +1,27 @@
+{
+  "name": "living-scene",
+  "version": "1.0.0",
+  "description": "Therapeutic Realms — The Living Scene: web 3D + WebXR prototype",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --port 4173",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "relay": "node relay/server.mjs"
+  },
+  "license": "UNLICENSED",
+  "dependencies": {
+    "three": "^0.187.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.0",
+    "@types/three": "^0.187.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0",
+    "ws": "^8.23.0"
+  },
+  "type": "module",
+  "private": true
+}

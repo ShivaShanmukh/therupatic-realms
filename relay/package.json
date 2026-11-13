@@ -1,0 +1,11 @@
+{
+  "name": "living-scene-relay",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Minimal WebSocket relay pairing a Director Desk with a participant view by session code.",
+  "main": "server.mjs",
+  "scripts": { "start": "node server.mjs" },
+  "engines": { "node": ">=20" },
+  "dependencies": { "ws": "^8.18.0" }
+}

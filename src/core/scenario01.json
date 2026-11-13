@@ -1,0 +1,33 @@
+{
+  "project": "Therapeutic Realms",
+  "experience": "The Living Scene",
+  "status": "fictional prototype",
+  "version": "2026-10-19-v3",
+  "originalAnchorId": "M01",
+  "immutableOriginal": {
+    "character": "Alex",
+    "role": "fictional workplace colleague, not therapist",
+    "line": "I’d like us to revisit your proposal."
+  },
+  "startLine": "Thanks for meeting. I have looked through your proposal.",
+  "hypotheticalBranches": [
+    {
+      "id": "A",
+      "label": "Ask for more detail",
+      "participantLine": "Could you tell me which part you would like to revisit?",
+      "alexLine": "The structure is promising. I would like clearer evidence for the proposed timeline."
+    },
+    {
+      "id": "B",
+      "label": "Share your concern",
+      "participantLine": "I feel uneasy hearing that. Could you explain what needs changing?",
+      "alexLine": "I understand. My main concern is that we have not discussed the revised requirements yet."
+    }
+  ],
+  "reflectionQuestion": "What differences did you notice between the possibilities?",
+  "warnings": [
+    "No fictional continuation states Alex’s actual intentions.",
+    "No clinical outcomes are inferred.",
+    "Director Desk is external to participant view."
+  ]
+}
