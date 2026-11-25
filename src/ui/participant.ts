@@ -33,6 +33,9 @@ export class ParticipantUI {
   private overlay: HTMLElement;
   private live: HTMLElement;
   private keys: Record<string, string> = {};
+  private hint: HTMLElement;
+  private toastTimer: ReturnType<typeof setTimeout> | null = null;
+  private lastRestoreCount = 0;
   private s: Session | null = null;
   private lastSpoken = '';
   private audio: AudioContext | null = null;
@@ -41,6 +44,7 @@ export class ParticipantUI {
     this.root = host;
     this.layer = h('div', { class: 'p-layer' });
     this.phaseTag = h('div', { class: 'phase-tag', 'data-testid': 'phase-tag' });
+    this.hint = h('div', { class: 'phase-hint', 'data-testid': 'phase-hint' });
     this.caption = h('div', { class: 'caption', 'data-testid': 'caption', role: 'region', 'aria-label': 'Captions' });
     this.quote = h('div', { class: 'quote-card', 'data-testid': 'original-quote', role: 'note' });
     this.panelLabels = { A: this.panelButton('A'), B: this.panelButton('B') };
@@ -58,6 +62,7 @@ export class ParticipantUI {
     this.live = h('div', { class: 'sr-only', 'aria-live': 'polite', 'data-testid': 'announcer' });
     this.layer.append(
       this.phaseTag,
+      this.hint,
       this.quote,
       this.panelLabels.A,
       this.panelLabels.B,
@@ -85,18 +90,20 @@ export class ParticipantUI {
 
   private panelButton(id: BranchId): HTMLButtonElement {
     const b = BRANCHES[id];
+    // Compact tag pinned to the top of the zone. States: hover/focus, selected, explored, unavailable.
     return h(
       'button',
       {
-        class: `path-label path-${id.toLowerCase()}`,
+        class: `path-tag path-${id.toLowerCase()}`,
         'data-testid': `path-${id}`,
         'aria-pressed': 'false',
         onclick: () => this.onPanel(id),
+        onfocus: () => this.view.setFocusPath(id),
+        onblur: () => this.view.setFocusPath(null),
       },
-      h('span', { class: 'path-kicker' }, `Hypothetical · Path ${id}`),
+      h('span', { class: 'path-kicker' }, `Path ${id} · Hypothetical`),
       h('span', { class: 'path-title' }, b.label),
-      h('span', { class: 'path-sub' }, 'One possible continuation'),
-      h('span', { class: 'path-action' }),
+      h('span', { class: 'path-state', 'data-testid': `path-${id}-state` }),
     );
   }
 
@@ -123,14 +130,18 @@ export class ParticipantUI {
     this.phaseTag.textContent = PHASE_TITLE[s.phase] ?? '';
     this.phaseTag.hidden = !PHASE_TITLE[s.phase];
 
-    // Original quote anchored in the room (Hold / Unfold / Recompose)
+    // Original moment card anchored in the room (Hold / Unfold / Recompose). Compact.
     const showQuote = s.scene.anchor.quote && live;
     this.quote.hidden = !showQuote;
     if (this.keyChanged('quote', `${showQuote}|${s.phase}`)) {
+      const kicker = s.phase === 'HELD' ? 'Moment held' : 'Original moment';
+      const sub =
+        s.phase === 'HELD' ? 'Held by your therapist · original statement unchanged' : s.phase === 'UNFOLDED' ? 'Unchanged' : null;
       this.quote.replaceChildren(
-        h('span', { class: 'quote-kicker' }, icon('lock'), s.phase === 'UNFOLDED' ? 'Original moment · unchanged' : 'Original moment'),
+        h('span', { class: 'quote-kicker' }, icon('lock'), kicker),
         h('span', { class: 'quote-text' }, `“${ORIGINAL_LINE}”`),
       );
+      if (sub) this.quote.append(h('span', { class: 'quote-sub' }, sub));
     }
 
     // Captions (hidden while the anchored quote already shows the same line)
@@ -138,54 +149,65 @@ export class ParticipantUI {
     const showCap = live && st.captions && !!cap && !showQuote;
     this.caption.hidden = !showCap;
     if (cap && this.keyChanged('caption', JSON.stringify(cap) + showCap)) {
-      const chip =
-        cap.kind === 'hypothetical'
-          ? h('span', { class: `chip chip-${cap.branch?.toLowerCase()}` }, `Hypothetical · Path ${cap.branch}`)
-          : cap.kind === 'context'
-            ? h('span', { class: 'chip chip-context' }, 'Context')
-            : null;
+      // One caption panel, attributed: who is speaking, and whether it is a fictional continuation.
+      const who =
+        cap.kind === 'context'
+          ? 'Context'
+          : cap.kind === 'hypothetical'
+            ? cap.speaker === 'You'
+              ? 'You · hypothetical line'
+              : 'Alex · fictional continuation'
+            : cap.speaker;
+      this.caption.dataset.branch = cap.kind === 'hypothetical' ? (cap.branch ?? '') : '';
       this.caption.replaceChildren(
-        h('div', { class: 'caption-head' }, chip, h('span', { class: 'speaker' }, cap.speaker === 'You' ? 'You (hypothetical)' : cap.speaker)),
+        h('div', { class: 'caption-head' }, h('span', { class: 'speaker' }, who)),
         h('p', { class: 'caption-text' }, cap.text),
       );
       this.speak(cap.text, s);
     }
 
-    // Path labels
+    // Path zone tags
     for (const id of ['A', 'B'] as const) {
       const btn = this.panelLabels[id];
       const on = s.phase === 'UNFOLDED' && s.scene.panels[id];
       btn.hidden = !on;
       const sel = s.selection === id;
+      const explored = s.visited.includes(id);
+      const unavailable = s.participantPaused || s.linkHalted;
       btn.setAttribute('aria-pressed', String(sel));
       btn.classList.toggle('selected', sel);
-      btn.disabled = s.participantPaused || s.linkHalted;
-      (btn.querySelector('.path-action') as HTMLElement).textContent = sel
-        ? 'Selected — your practitioner will begin it. Press again to deselect.'
-        : `Choose Path ${id}`;
+      btn.classList.toggle('explored', explored);
+      btn.classList.toggle('unavailable', unavailable);
+      btn.disabled = unavailable;
+      const state = unavailable ? 'Unavailable' : sel ? 'Selected' : explored ? 'Explored ✓' : '';
+      const stateEl = btn.querySelector('.path-state') as HTMLElement;
+      stateEl.textContent = state;
+      stateEl.hidden = !state;
+      btn.setAttribute(
+        'aria-label',
+        `Hypothetical Path ${id}: ${BRANCHES[id].label}.${explored ? ' Explored before.' : ''}${sel ? ' Selected. Press again to deselect.' : unavailable ? ' Unavailable.' : ' Press to choose.'}`,
+      );
     }
 
-    // Side note per state
-    const noteKey = `${s.phase}|${s.visited.join('')}|${s.selection}`;
-    if (this.keyChanged('note', noteKey)) {
-      this.note.replaceChildren();
-      this.note.hidden = true;
-      if (s.phase === 'HELD') {
-        this.setNote('Moment held', 'Your practitioner has held the scene exactly as it was. Nothing will move on until they continue.');
-      } else if (s.phase === 'UNFOLDED') {
-        this.setNote(
-          'Same room, two possibilities',
-          s.selection
-            ? `You chose Path ${s.selection}. Your practitioner will begin it when ready.`
-            : 'Two fictional possibilities have appeared on either side. They are not predictions. Choose one to explore.',
-        );
-      } else if (s.phase === 'RECOMPOSED') {
-        this.setNote(
-          'Original moment restored',
-          `You are back at the same moment. Paths explored so far: ${s.visited.map((v) => `Path ${v}`).join(', ') || 'none'}.`,
-        );
-      }
+    // One-line hint under the phase title (no floating cards over the room)
+    const hint =
+      s.phase === 'UNFOLDED'
+        ? s.selection
+          ? `Path ${s.selection} chosen — your therapist will begin it.`
+          : 'Choose Path A or Path B to explore. Neither is a prediction.'
+        : '';
+    this.hint.textContent = hint;
+    this.hint.hidden = !hint || s.participantPaused || s.linkHalted;
+
+    // Brief "Original moment restored" confirmation after each Recompose.
+    if (s.restoreCount > this.lastRestoreCount && s.phase === 'RECOMPOSED') {
+      this.note.replaceChildren(h('strong', { class: 'note-title' }, 'Original moment restored'), h('p', {}, 'Paths hidden · same view'));
+      this.note.hidden = false;
+      if (this.toastTimer) clearTimeout(this.toastTimer);
+      this.toastTimer = setTimeout(() => (this.note.hidden = true), 3500);
     }
+    this.lastRestoreCount = s.restoreCount;
+    if (s.phase !== 'RECOMPOSED') this.note.hidden = true;
 
     // Hypothetical badge while exploring
     const exploring = s.phase === 'EXPLORING' && s.scene.hypotheticalLabel;
@@ -196,14 +218,14 @@ export class ParticipantUI {
       this.hypBadge.replaceChildren(
         h('span', { class: 'hyp-kicker' }, `Hypothetical · Path ${b.id}`),
         h('span', { class: 'hyp-title' }, b.label),
-        h('span', { class: 'hyp-sub' }, 'A fictional possibility — not what Alex actually intended.'),
       );
+      this.hypBadge.setAttribute('aria-label', `Hypothetical Path ${b.id}, ${b.label}. A fictional possibility, not what Alex actually intended.`);
     }
 
     this.returnBtn.hidden = s.phase !== 'EXPLORING';
     this.returnBtn.disabled = s.returnRequested || s.participantPaused;
     this.returnBtn.lastChild!.textContent = s.returnRequested
-      ? 'Return requested — your practitioner will bring you back'
+      ? 'Return requested — your therapist will bring you back'
       : 'Request return to the original';
 
     // Safety controls: Pause in live states, Leave in every non-terminal state
@@ -234,7 +256,7 @@ export class ParticipantUI {
       if (msg[s.phase]) this.announce(msg[s.phase]!);
       if (s.phase === 'RECOMPOSED') this.chime(s);
     }
-    if (prev && !prev.linkHalted && s.linkHalted) this.announce('Connection to your practitioner was lost. The scene is paused.');
+    if (prev && !prev.linkHalted && s.linkHalted) this.announce('Connection to your therapist was lost. The scene is paused.');
     if (s.participantPaused || s.linkHalted || !live) window.speechSynthesis?.cancel();
   }
 
@@ -253,13 +275,11 @@ export class ParticipantUI {
       if (btn.hidden) continue;
       const p = v.project(v.room.panels[id].labelAnchor);
       btn.style.transform = `translate(${p.x}px, ${p.y}px) translate(-50%, -50%)`;
-      btn.style.opacity = String(v.panelReveal(id));
+      const reveal = v.panelReveal(id);
+      btn.style.opacity = String(reveal);
+      btn.classList.toggle('hover', v.hoveredPath === id);
+      btn.classList.toggle('revealing', reveal < 0.95);
     }
-  }
-
-  private setNote(title: string, body: string) {
-    this.note.hidden = false;
-    this.note.replaceChildren(h('strong', { class: 'note-title' }, title), h('p', {}, body));
   }
 
   private keyChanged(region: string, key: string): boolean {
@@ -295,7 +315,7 @@ export class ParticipantUI {
           h(
             'p',
             {},
-            'A practitioner-guided prototype for looking at one ordinary conversation from more than one angle. You will meet Alex, a fictional colleague. A qualified practitioner guides the session from a separate desk.',
+            'A therapist-guided prototype for looking at one ordinary conversation from more than one angle. You will meet Alex, a fictional colleague. A qualified therapist guides the session from a separate desk.',
           ),
           h('p', { class: 'fine' }, 'Research prototype · desktop demonstration · not clinically validated'),
           h('button', { class: 'btn primary', 'data-autofocus': true, 'data-testid': 'enter', onclick: () => send('ENTER') }, 'Enter experience'),
@@ -319,7 +339,7 @@ export class ParticipantUI {
             h(
               'span',
               {},
-              'I understand this is a fictional, simulated conversation for reflective practice, guided by a qualified practitioner. Alex is a fictional colleague, not a therapist. I can pause or leave at any time.',
+              'I understand this is a fictional, simulated conversation for reflective practice, guided by a qualified therapist. Alex is a fictional colleague, not a therapist. I can pause or leave at any time.',
             ),
           ),
           h(
@@ -333,16 +353,16 @@ export class ParticipantUI {
           'section',
           { class: 'card waiting', 'aria-labelledby': 'wt-title', 'data-testid': 'screen-waiting' },
           h('p', { class: 'eyebrow' }, '03 · Arrival'),
-          h('h2', { id: 'wt-title' }, 'Waiting for your practitioner'),
+          h('h2', { id: 'wt-title' }, 'Waiting for your therapist'),
           h(
             'ul',
             { class: 'status-list' },
-            h('li', { 'data-ok': String(s.clinicianConnected), 'data-testid': 'wait-connected' }, icon(s.clinicianConnected ? 'check' : 'dot'), s.clinicianConnected ? 'Practitioner connected' : 'Practitioner not connected yet'),
-            h('li', { 'data-ok': String(s.participantReady), 'data-testid': 'wait-ready' }, icon(s.participantReady ? 'check' : 'dot'), s.participantReady ? 'You are ready' : 'Tell your practitioner when you are ready'),
+            h('li', { 'data-ok': String(s.clinicianConnected), 'data-testid': 'wait-connected' }, icon(s.clinicianConnected ? 'check' : 'dot'), s.clinicianConnected ? 'Therapist connected' : 'Therapist not connected yet'),
+            h('li', { 'data-ok': String(s.participantReady), 'data-testid': 'wait-ready' }, icon(s.participantReady ? 'check' : 'dot'), s.participantReady ? 'You are ready' : 'Tell your therapist when you are ready'),
           ),
-          h('p', { class: 'fine', 'data-testid': 'wait-code' }, `Session code for your practitioner’s Desk: ${s.sessionId}`),
+          h('p', { class: 'fine', 'data-testid': 'wait-code' }, `Session code for your therapist’s Desk: ${s.sessionId}`),
           s.participantReady
-            ? h('p', {}, 'The conversation will begin when your practitioner starts it. You do not need to do anything.')
+            ? h('p', {}, 'The conversation will begin when your therapist starts it. You do not need to do anything.')
             : h('button', { class: 'btn primary', 'data-testid': 'ready', 'data-autofocus': true, onclick: () => send('READY') }, 'I’m ready'),
         );
       case 'REFLECTION':
@@ -352,7 +372,7 @@ export class ParticipantUI {
           'section',
           { class: 'card', 'data-testid': 'screen-left' },
           h('h2', {}, 'You have left the session'),
-          h('p', {}, 'Nothing else will happen in this scene. You can talk to your practitioner, or close this window.'),
+          h('p', {}, 'Nothing else will happen in this scene. You can talk to your therapist, or close this window.'),
           h('button', { class: 'btn ghost', 'data-autofocus': true, onclick: () => location.reload() }, 'Restart demo'),
         );
       case 'ENDED':
@@ -360,7 +380,7 @@ export class ParticipantUI {
           'section',
           { class: 'card', 'data-testid': 'screen-ended' },
           h('h2', {}, 'Session ended'),
-          h('p', {}, 'Your practitioner has ended the session.'),
+          h('p', {}, 'Your therapist has ended the session.'),
           h('button', { class: 'btn ghost', 'data-autofocus': true, onclick: () => location.reload() }, 'Restart demo'),
         );
       default:
@@ -395,7 +415,7 @@ export class ParticipantUI {
         h('span', {}, 'Your interpretation — not verified (optional, stays on this screen, not saved)'),
         h('textarea', { rows: 2, 'data-testid': 'interpretation' }),
       ),
-      h('p', { class: 'fine' }, 'Your practitioner will guide the discussion. Leave is always available at the bottom right.'),
+      h('p', { class: 'fine' }, 'Your therapist will guide the discussion. Leave is always available at the bottom right.'),
     );
   }
 
@@ -469,10 +489,10 @@ export class ParticipantUI {
     this.overlay.hidden = !show;
     if (!show) return;
     const send = this.port.send;
-    const title = s.participantPaused ? 'Paused' : 'Connection to your practitioner was lost';
+    const title = s.participantPaused ? 'Paused' : 'Connection to your therapist was lost';
     const body = s.linkHalted
       ? s.clinicianConnected
-        ? 'Your practitioner has reconnected and will continue when ready. You can leave at any time.'
+        ? 'Your therapist has reconnected and will continue when ready. You can leave at any time.'
         : 'The scene is paused and will not move on by itself. You can leave at any time.'
       : 'The scene is paused exactly where it was. Resume when you are ready, or leave.';
     const card = h(
@@ -480,7 +500,7 @@ export class ParticipantUI {
       { class: 'card pause-card', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'pz-title', 'data-testid': 'pause-overlay' },
       h('h2', { id: 'pz-title' }, title),
       h('p', {}, body),
-      s.participantPaused && s.linkHalted ? h('p', { class: 'fine' }, 'Practitioner link: lost. Resuming will keep the scene held until they reconnect.') : null,
+      s.participantPaused && s.linkHalted ? h('p', { class: 'fine' }, 'Therapist link: lost. Resuming will keep the scene held until they reconnect.') : null,
       h(
         'div',
         { class: 'row' },

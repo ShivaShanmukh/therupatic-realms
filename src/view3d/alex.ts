@@ -85,7 +85,8 @@ export class Alex {
 
   constructor() {
     this.root.name = 'Alex';
-    const skin = new THREE.MeshStandardMaterial({ color: 0xc89a7c, roughness: 0.7 });
+    const skin = new THREE.MeshStandardMaterial({ color: 0xd2a586, roughness: 0.65 });
+    const sclera = new THREE.MeshStandardMaterial({ color: 0xf3ede6, roughness: 0.4 });
     const hair = new THREE.MeshStandardMaterial({ color: 0x3a2418, roughness: 0.9 });
     const shirt = new THREE.MeshStandardMaterial({ color: 0x3a4250, roughness: 0.85 });
     const trousers = new THREE.MeshStandardMaterial({ color: 0x23252b, roughness: 0.9 });
@@ -139,9 +140,14 @@ export class Alex {
     hairBack.scale.set(1.02, 1.05, 0.85);
     this.head.add(skull, hairTop, hairBack);
     for (const sx of [-1, 1]) {
-      const eye = new THREE.Mesh(new THREE.SphereGeometry(0.012, 12, 8), dark);
-      eye.position.set(sx * 0.038, 0.125, 0.1);
-      this.eyes.push(eye);
+      // Eye white behind a dark iris so the eyes read at a distance.
+      const white = new THREE.Mesh(new THREE.SphereGeometry(0.017, 14, 10), sclera);
+      white.scale.set(1.25, 0.85, 0.5);
+      white.position.set(sx * 0.038, 0.125, 0.098);
+      const eye = new THREE.Mesh(new THREE.SphereGeometry(0.0105, 12, 8), dark);
+      eye.position.set(sx * 0.038, 0.125, 0.105);
+      this.eyes.push(eye, white);
+      this.head.add(white);
       const brow = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.006, 0.01), hair);
       brow.position.set(sx * 0.038, 0.153, 0.104);
       brow.rotation.z = sx * -0.08;
@@ -149,6 +155,10 @@ export class Alex {
     }
     this.mouth = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.012, 0.01), new THREE.MeshStandardMaterial({ color: 0x5a2a24 }));
     this.mouth.position.set(0, 0.06, 0.108);
+    const nose = new THREE.Mesh(new THREE.SphereGeometry(0.012, 10, 8), skin);
+    nose.scale.set(0.8, 1.1, 1);
+    nose.position.set(0, 0.098, 0.112);
+    this.head.add(nose);
     this.head.add(this.mouth);
 
     // arms

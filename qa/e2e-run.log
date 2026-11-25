@@ -1,40 +1,43 @@
 
-Running 20 tests using 1 worker
+Running 23 tests using 1 worker
 
-  ✓   1 e2e/flow.spec.ts:66:1 › T01 entry: no session before acknowledgement and Ready (29.6s)
-  ✓   2 e2e/flow.spec.ts:79:1 › T02 start: rejected while disconnected, accepted when connected + ready (36.1s)
-  ✓   3 e2e/flow.spec.ts:92:1 › T03 canonical line is identical in conversation, hold, unfold, restore and reflection (41.9s)
-  ✓   4 e2e/flow.spec.ts:108:1 › T04 hold freezes Alex at M01 and shows no branch options (32.4s)
-  ✓   5 e2e/flow.spec.ts:127:1 › T05 unfold keeps the same room and labels both paths hypothetical (39.1s)
-  ✓   6 e2e/flow.spec.ts:150:3 › T06 branch A: approved dialogue, captions and persistent label (39.5s)
-  ✓   7 e2e/flow.spec.ts:150:3 › T07 branch B: approved dialogue, captions and persistent label (40.0s)
-  ✓   8 e2e/flow.spec.ts:179:1 › T08 restore repeat: A → R → B → R → A → R restores the exact original (data and 3D) (1.2m)
-  ✓   9 e2e/flow.spec.ts:201:1 › T09 safety: Pause and Leave in every live state, including while disconnected (1.2m)
-  ✓  10 e2e/flow.spec.ts:235:1 › T10 invalid commands are rejected and do not corrupt state (1.1m)
-  ✓  11 e2e/flow.spec.ts:258:1 › T11 disconnect mid-Explore halts; reconnect + explicit resume required (50.4s)
-  ✓  12 e2e/flow.spec.ts:277:1 › T12 reflection shows only visited paths, once each (56.5s)
-  ✓  13 e2e/flow.spec.ts:291:1 › T12b early end needs a justification and shows the empty state (36.0s)
-  ✓  14 e2e/flow.spec.ts:301:1 › T13 accessibility baseline: keyboard-only, captions, caption size, reduced motion, high contrast (1.1m)
-  ✓  15 e2e/flow.spec.ts:354:1 › T14 deliverability: runs from the local build with no external network requests (46.7s)
-  ✓  16 e2e/flow.spec.ts:369:1 › Participant view never contains clinician controls (34.4s)
-  ✓  17 e2e/flow.spec.ts:380:1 › Separate-window Director Desk drives the participant; closing it counts as link loss (34.5s)
-  ✓  18 e2e/flow.spec.ts:414:1 › VR UI: full journey by pointing at in-world panels (ray hit-testing) (51.7s)
-  ✓  19 e2e/flow.spec.ts:452:1 › VR UI: link loss shows the in-world notice with Leave, and no path choice (30.7s)
-  ✓  20 e2e/flow.spec.ts:477:1 › Relay: Desk on another "device" joins by code, drives Hold, and closing it halts the scene (28.8s)
+  ✓   1 e2e/flow.spec.ts:66:1 › T01 entry: no session before acknowledgement and Ready (21.9s)
+  ✓   2 e2e/flow.spec.ts:79:1 › T02 start: rejected while disconnected, accepted when connected + ready (26.3s)
+  ✓   3 e2e/flow.spec.ts:92:1 › T03 canonical line is identical in conversation, hold, unfold, restore and reflection (32.8s)
+  ✓   4 e2e/flow.spec.ts:108:1 › T04 hold freezes Alex at M01 and shows no branch options (24.6s)
+  ✓   5 e2e/flow.spec.ts:128:1 › T05 unfold keeps the same room and labels both paths hypothetical (29.1s)
+  ✓   6 e2e/flow.spec.ts:153:3 › T06 branch A: approved dialogue, captions and persistent label (31.3s)
+  ✓   7 e2e/flow.spec.ts:153:3 › T07 branch B: approved dialogue, captions and persistent label (30.2s)
+  ✓   8 e2e/flow.spec.ts:181:1 › T08 restore repeat: A → R → B → R → A → R restores the exact original (data and 3D) (56.5s)
+  ✓   9 e2e/flow.spec.ts:203:1 › T09 safety: Pause and Leave in every live state, including while disconnected (57.4s)
+  ✓  10 e2e/flow.spec.ts:237:1 › T10 invalid commands are rejected and do not corrupt state (49.6s)
+  ✓  11 e2e/flow.spec.ts:260:1 › T11 disconnect mid-Explore halts; reconnect + explicit resume required (41.6s)
+  ✓  12 e2e/flow.spec.ts:279:1 › T12 reflection shows only visited paths, once each (42.8s)
+  ✓  13 e2e/flow.spec.ts:293:1 › T12b early end needs a justification and shows the empty state (27.5s)
+  ✓  14 e2e/flow.spec.ts:303:1 › T13 accessibility baseline: keyboard-only, captions, caption size, reduced motion, high contrast (52.0s)
+  ✓  15 e2e/flow.spec.ts:356:1 › T14 deliverability: runs from the local build with no external network requests (32.7s)
+  ✓  16 e2e/flow.spec.ts:371:1 › Participant view never contains clinician controls (24.9s)
+  ✓  17 e2e/flow.spec.ts:382:1 › Separate-window Director Desk drives the participant; closing it counts as link loss (24.9s)
+  ✓  18 e2e/flow.spec.ts:416:1 › VR UI: full journey by pointing at in-world panels (ray hit-testing) (37.5s)
+  ✓  19 e2e/flow.spec.ts:454:1 › VR UI: link loss shows the in-world notice with Leave, and no path choice (22.1s)
+  ✓  20 e2e/flow.spec.ts:479:1 › Relay: Desk on another "device" joins by code, drives Hold, and closing it halts the scene (22.0s)
+  ✓  21 e2e/flow.spec.ts:511:1 › Visual lock: path zones show focus, selected, explored and unavailable states; Pause/Leave stay reachable mid-transition (33.5s)
+  ✓  22 e2e/flow.spec.ts:544:1 › Visual lock: no overlap between caption and Pause/Leave/Return while exploring (32.0s)
+  ✓  23 e2e/flow.spec.ts:557:1 › Visual lock: jury capture has no test harness or open debug log; Desk shows state + permitted commands (23.7s)
 
-  Slow test file: e2e/flow.spec.ts (15.1m)
+  Slow test file: e2e/flow.spec.ts (13.0m)
   Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
-  20 passed (15.1m)
+  23 passed (13.0m)
 {
   "config": {
     "argv": [
       "/opt/node22/bin/node",
-      "/home/claude/living-scene/node_modules/.bin/playwright",
+      "/home/claude/therupatic-realms/node_modules/.bin/playwright",
       "test",
       "--reporter=list,json"
     ],
-    "configFile": "/home/claude/living-scene/playwright.config.ts",
-    "rootDir": "/home/claude/living-scene/e2e",
+    "configFile": "/home/claude/therupatic-realms/playwright.config.ts",
+    "rootDir": "/home/claude/therupatic-realms/e2e",
     "failOnFlakyTests": false,
     "forbidOnly": false,
     "fullyParallel": false,
@@ -50,7 +53,7 @@ Running 20 tests using 1 worker
     "preserveOutput": "always",
     "projects": [
       {
-        "outputDir": "/home/claude/living-scene/test-results",
+        "outputDir": "/home/claude/therupatic-realms/test-results",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
@@ -58,7 +61,7 @@ Running 20 tests using 1 worker
         },
         "id": "",
         "name": "",
-        "testDir": "/home/claude/living-scene/e2e",
+        "testDir": "/home/claude/therupatic-realms/e2e",
         "testIgnore": [],
         "testMatch": [
           "**/*.@(spec|test).?(c|m)[jt]s?(x)"
@@ -70,15 +73,15 @@ Running 20 tests using 1 worker
       {
         "grep": {},
         "grepInvert": null,
-        "outputDir": "/home/claude/living-scene/test-results",
+        "outputDir": "/home/claude/therupatic-realms/test-results",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
           "actualWorkers": 1
         },
         "name": "",
-        "testDir": "/home/claude/living-scene/e2e",
-        "snapshotDir": "/home/claude/living-scene/e2e",
+        "testDir": "/home/claude/therupatic-realms/e2e",
+        "snapshotDir": "/home/claude/therupatic-realms/e2e",
         "testIgnore": [],
         "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
         "timeout": 90000,
@@ -146,12 +149,12 @@ Running 20 tests using 1 worker
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 29563,
+                  "duration": 21931,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-13T13:22:06.087Z",
+                  "startTime": "2026-11-25T02:41:25.672Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -180,12 +183,12 @@ Running 20 tests using 1 worker
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 36075,
+                  "duration": 26271,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-13T13:22:35.865Z",
+                  "startTime": "2026-11-25T02:41:47.906Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -214,12 +217,12 @@ Running 20 tests using 1 worker
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 41864,
+                  "duration": 32759,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-13T13:23:11.985Z",
+                  "startTime": "2026-11-25T02:42:14.198Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -248,12 +251,12 @@ Running 20 tests using 1 worker
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 32397,
+                  "duration": 24608,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-13T13:23:53.901Z",
+                  "startTime": "2026-11-25T02:42:46.966Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -282,12 +285,12 @@ Running 20 tests using 1 worker
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 39143,
+                  "duration": 29143,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-13T13:24:26.336Z",
+                  "startTime": "2026-11-25T02:43:11.609Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -297,7 +300,7 @@ Running 20 tests using 1 worker
           ],
           "id": "f353db48c569834dc22b-6a08a188764087048763",
           "file": "flow.spec.ts",
-          "line": 127,
+          "line": 128,
           "column": 1
         },
         {
@@ -316,12 +319,12 @@ Running 20 tests using 1 worker
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 39498,
+                  "duration": 31333,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-13T13:25:05.505Z",
+                  "startTime": "2026-11-25T02:43:40.793Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -331,7 +334,7 @@ Running 20 tests using 1 worker
           ],
           "id": "f353db48c569834dc22b-3893156f3241846333c6",
           "file": "flow.spec.ts",
-          "line": 150,
+          "line": 153,
           "column": 3
         },
         {
@@ -350,12 +353,12 @@ Running 20 tests using 1 worker
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 39953,
+                  "duration": 30216,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-13T13:25:45.034Z",
+                  "startTime": "2026-11-25T02:44:12.139Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -365,7 +368,7 @@ Running 20 tests using 1 worker
           ],
           "id": "f353db48c569834dc22b-8ea24d4c1d005def1f1a",
           "file": "flow.spec.ts",
-          "line": 150,
+          "line": 153,
           "column": 3
         },
         {
@@ -379,8 +382,8 @@ Running 20 tests using 1 worker
                 {
                   "type": "slow",
                   "location": {
-                    "file": "/home/claude/living-scene/e2e/flow.spec.ts",
-                    "line": 180,
+                    "file": "/home/claude/therupatic-realms/e2e/flow.spec.ts",
+                    "line": 182,
                     "column": 8
                   }
                 }
@@ -393,18 +396,18 @@ Running 20 tests using 1 worker
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 70385,
+                  "duration": 56521,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-13T13:26:25.004Z",
+                  "startTime": "2026-11-25T02:44:42.379Z",
                   "annotations": [
                     {
                       "type": "slow",
                       "location": {
-                        "file": "/home/claude/living-scene/e2e/flow.spec.ts",
-                        "line": 180,
+                        "file": "/home/claude/therupatic-realms/e2e/flow.spec.ts",
+                        "line": 182,
                         "column": 8
                       }
                     }
@@ -417,7 +420,7 @@ Running 20 tests using 1 worker
           ],
           "id": "f353db48c569834dc22b-5bb8ef678720ae5c030b",
           "file": "flow.spec.ts",
-          "line": 179,
+          "line": 181,
           "column": 1
         },
         {
@@ -431,8 +434,8 @@ Running 20 tests using 1 worker
                 {
                   "type": "slow",
                   "location": {
-                    "file": "/home/claude/living-scene/e2e/flow.spec.ts",
-                    "line": 202,
+                    "file": "/home/claude/therupatic-realms/e2e/flow.spec.ts",
+                    "line": 204,
                     "column": 8
                   }
                 }
@@ -445,18 +448,18 @@ Running 20 tests using 1 worker
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 73275,
+                  "duration": 57440,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-13T13:27:35.441Z",
+                  "startTime": "2026-11-25T02:45:38.927Z",
                   "annotations": [
                     {
                       "type": "slow",
                       "location": {
-                        "file": "/home/claude/living-scene/e2e/flow.spec.ts",
-                        "line": 202,
+                        "file": "/home/claude/therupatic-realms/e2e/flow.spec.ts",
+                        "line": 204,
                         "column": 8
                       }
                     }
@@ -469,7 +472,7 @@ Running 20 tests using 1 worker
           ],
           "id": "f353db48c569834dc22b-6956c59cba1cb1bebfce",
           "file": "flow.spec.ts",
-          "line": 201,
+          "line": 203,
           "column": 1
         },
         {
@@ -483,8 +486,8 @@ Running 20 tests using 1 worker
                 {
                   "type": "slow",
                   "location": {
-                    "file": "/home/claude/living-scene/e2e/flow.spec.ts",
-                    "line": 236,
+                    "file": "/home/claude/therupatic-realms/e2e/flow.spec.ts",
+                    "line": 238,
                     "column": 8
                   }
                 }
@@ -497,18 +500,18 @@ Running 20 tests using 1 worker
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 66078,
+                  "duration": 49594,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-13T13:28:48.740Z",
+                  "startTime": "2026-11-25T02:46:36.408Z",
                   "annotations": [
                     {
                       "type": "slow",
                       "location": {
-                        "file": "/home/claude/living-scene/e2e/flow.spec.ts",
-                        "line": 236,
+                        "file": "/home/claude/therupatic-realms/e2e/flow.spec.ts",
+                        "line": 238,
                         "column": 8
                       }
                     }
@@ -521,7 +524,7 @@ Running 20 tests using 1 worker
           ],
           "id": "f353db48c569834dc22b-1dbe0334d49e5a77fb90",
           "file": "flow.spec.ts",
-          "line": 235,
+          "line": 237,
           "column": 1
         },
         {
@@ -540,12 +543,12 @@ Running 20 tests using 1 worker
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 50362,
+                  "duration": 41606,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-13T13:29:54.847Z",
+                  "startTime": "2026-11-25T02:47:26.015Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -555,7 +558,7 @@ Running 20 tests using 1 worker
           ],
           "id": "f353db48c569834dc22b-561f94b56618f009d6d0",
           "file": "flow.spec.ts",
-          "line": 258,
+          "line": 260,
           "column": 1
         },
         {
@@ -574,12 +577,12 @@ Running 20 tests using 1 worker
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 56489,
+                  "duration": 42785,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-13T13:30:45.264Z",
+                  "startTime": "2026-11-25T02:48:07.649Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -589,7 +592,7 @@ Running 20 tests using 1 worker
           ],
           "id": "f353db48c569834dc22b-bf07410cbbb6600f0c0a",
           "file": "flow.spec.ts",
-          "line": 277,
+          "line": 279,
           "column": 1
         },
         {
@@ -608,12 +611,12 @@ Running 20 tests using 1 worker
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 35995,
+                  "duration": 27472,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-13T13:31:41.783Z",
+                  "startTime": "2026-11-25T02:48:50.443Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -623,7 +626,7 @@ Running 20 tests using 1 worker
           ],
           "id": "f353db48c569834dc22b-b942705bbbabad9be20c",
           "file": "flow.spec.ts",
-          "line": 291,
+          "line": 293,
           "column": 1
         },
         {
@@ -642,12 +645,12 @@ Running 20 tests using 1 worker
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 67673,
+                  "duration": 51966,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-13T13:32:17.787Z",
+                  "startTime": "2026-11-25T02:49:17.932Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -657,7 +660,7 @@ Running 20 tests using 1 worker
           ],
           "id": "f353db48c569834dc22b-9849487357cddcf56342",
           "file": "flow.spec.ts",
-          "line": 301,
+          "line": 303,
           "column": 1
         },
         {
@@ -676,12 +679,12 @@ Running 20 tests using 1 worker
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 46694,
+                  "duration": 32695,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-13T13:33:25.470Z",
+                  "startTime": "2026-11-25T02:50:09.912Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -691,7 +694,7 @@ Running 20 tests using 1 worker
           ],
           "id": "f353db48c569834dc22b-97de014f8abfd0622786",
           "file": "flow.spec.ts",
-          "line": 354,
+          "line": 356,
           "column": 1
         },
         {
@@ -710,12 +713,12 @@ Running 20 tests using 1 worker
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 34368,
+                  "duration": 24850,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-13T13:34:12.189Z",
+                  "startTime": "2026-11-25T02:50:42.641Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -725,7 +728,7 @@ Running 20 tests using 1 worker
           ],
           "id": "f353db48c569834dc22b-8cd7a9dacc3bf6b493e4",
           "file": "flow.spec.ts",
-          "line": 369,
+          "line": 371,
           "column": 1
         },
         {
@@ -744,12 +747,12 @@ Running 20 tests using 1 worker
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 34531,
+                  "duration": 24945,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-13T13:34:46.565Z",
+                  "startTime": "2026-11-25T02:51:07.537Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -759,7 +762,7 @@ Running 20 tests using 1 worker
           ],
           "id": "f353db48c569834dc22b-a4208ef7bf4af9edbe10",
           "file": "flow.spec.ts",
-          "line": 380,
+          "line": 382,
           "column": 1
         },
         {
@@ -773,8 +776,8 @@ Running 20 tests using 1 worker
                 {
                   "type": "slow",
                   "location": {
-                    "file": "/home/claude/living-scene/e2e/flow.spec.ts",
-                    "line": 415,
+                    "file": "/home/claude/therupatic-realms/e2e/flow.spec.ts",
+                    "line": 417,
                     "column": 8
                   }
                 }
@@ -787,18 +790,18 @@ Running 20 tests using 1 worker
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 51664,
+                  "duration": 37502,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-13T13:35:21.113Z",
+                  "startTime": "2026-11-25T02:51:32.502Z",
                   "annotations": [
                     {
                       "type": "slow",
                       "location": {
-                        "file": "/home/claude/living-scene/e2e/flow.spec.ts",
-                        "line": 415,
+                        "file": "/home/claude/therupatic-realms/e2e/flow.spec.ts",
+                        "line": 417,
                         "column": 8
                       }
                     }
@@ -811,7 +814,7 @@ Running 20 tests using 1 worker
           ],
           "id": "f353db48c569834dc22b-59b82d8b63b066be1752",
           "file": "flow.spec.ts",
-          "line": 414,
+          "line": 416,
           "column": 1
         },
         {
@@ -830,12 +833,12 @@ Running 20 tests using 1 worker
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 30730,
+                  "duration": 22120,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-13T13:36:12.789Z",
+                  "startTime": "2026-11-25T02:52:10.021Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -845,7 +848,7 @@ Running 20 tests using 1 worker
           ],
           "id": "f353db48c569834dc22b-01607d9d9de847b8323e",
           "file": "flow.spec.ts",
-          "line": 452,
+          "line": 454,
           "column": 1
         },
         {
@@ -859,8 +862,8 @@ Running 20 tests using 1 worker
                 {
                   "type": "slow",
                   "location": {
-                    "file": "/home/claude/living-scene/e2e/flow.spec.ts",
-                    "line": 478,
+                    "file": "/home/claude/therupatic-realms/e2e/flow.spec.ts",
+                    "line": 480,
                     "column": 8
                   }
                 }
@@ -873,18 +876,18 @@ Running 20 tests using 1 worker
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 28792,
+                  "duration": 22020,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-13T13:36:43.529Z",
+                  "startTime": "2026-11-25T02:52:32.155Z",
                   "annotations": [
                     {
                       "type": "slow",
                       "location": {
-                        "file": "/home/claude/living-scene/e2e/flow.spec.ts",
-                        "line": 478,
+                        "file": "/home/claude/therupatic-realms/e2e/flow.spec.ts",
+                        "line": 480,
                         "column": 8
                       }
                     }
@@ -897,7 +900,127 @@ Running 20 tests using 1 worker
           ],
           "id": "f353db48c569834dc22b-2c11db1aaec5b542d48c",
           "file": "flow.spec.ts",
-          "line": 477,
+          "line": 479,
+          "column": 1
+        },
+        {
+          "title": "Visual lock: path zones show focus, selected, explored and unavailable states; Pause/Leave stay reachable mid-transition",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 270000,
+              "annotations": [
+                {
+                  "type": "slow",
+                  "location": {
+                    "file": "/home/claude/therupatic-realms/e2e/flow.spec.ts",
+                    "line": 512,
+                    "column": 8
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 33482,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-25T02:52:54.214Z",
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/home/claude/therupatic-realms/e2e/flow.spec.ts",
+                        "line": 512,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f353db48c569834dc22b-d75f00dd4b9177054c2c",
+          "file": "flow.spec.ts",
+          "line": 511,
+          "column": 1
+        },
+        {
+          "title": "Visual lock: no overlap between caption and Pause/Leave/Return while exploring",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 32029,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-25T02:53:27.708Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f353db48c569834dc22b-e0bfa530a1a14d3ff817",
+          "file": "flow.spec.ts",
+          "line": 544,
+          "column": 1
+        },
+        {
+          "title": "Visual lock: jury capture has no test harness or open debug log; Desk shows state + permitted commands",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 23728,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-25T02:53:59.752Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f353db48c569834dc22b-8ed2cf508480d5003965",
+          "file": "flow.spec.ts",
+          "line": 557,
           "column": 1
         }
       ]
@@ -905,9 +1028,9 @@ Running 20 tests using 1 worker
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-11-13T13:22:05.663Z",
-    "duration": 906768.512,
-    "expected": 20,
+    "startTime": "2026-11-25T02:41:24.136Z",
+    "duration": 779488.684,
+    "expected": 23,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0

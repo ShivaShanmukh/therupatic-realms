@@ -13,6 +13,8 @@ export interface PanelRig {
   pattern: THREE.Mesh<THREE.ShapeGeometry, THREE.MeshBasicMaterial>;
   rim: THREE.Mesh<THREE.ShapeGeometry, THREE.MeshBasicMaterial>;
   slot: THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial>;
+  /** Thin floor line linking the zone to the original moment. */
+  guide: THREE.Line<THREE.BufferGeometry, THREE.LineBasicMaterial>;
   labelAnchor: THREE.Object3D; // where the HTML label is projected
 }
 
@@ -97,8 +99,9 @@ function buildPanel(id: 'A' | 'B', x: number, z: number, rotY: number): PanelRig
   );
   pattern.position.z = 0.002;
 
+  // Thin contour: the zone reads as a place in the room, not a card.
   const rimShape = archShape(W, H);
-  rimShape.holes.push(archShape(W, H, 0.022) as unknown as THREE.Path);
+  rimShape.holes.push(archShape(W, H, 0.009) as unknown as THREE.Path);
   const rim = new THREE.Mesh(
     new THREE.ShapeGeometry(rimShape, 24),
     new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.95, side: THREE.DoubleSide, depthWrite: false }),
@@ -106,20 +109,50 @@ function buildPanel(id: 'A' | 'B', x: number, z: number, rotY: number): PanelRig
   rim.position.z = 0.004;
 
   const labelAnchor = new THREE.Object3D();
-  labelAnchor.position.set(0, H * 0.55, 0.01);
+  labelAnchor.position.set(0, H * 0.84, 0.01);
 
   group.add(surface, pattern, rim, labelAnchor);
 
   // Brass floor slot the panel rises from: part of the room, always visible.
   const slot = new THREE.Mesh(
-    new THREE.BoxGeometry(W + 0.12, 0.012, 0.07),
+    new THREE.BoxGeometry(W + 0.06, 0.006, 0.03),
     std(0x8a6a3c, { metalness: 0.7, roughness: 0.35, emissive: color, emissiveIntensity: 0 }),
   );
   slot.position.set(x, 0.006, z);
   slot.rotation.y = rotY;
   slot.receiveShadow = true;
 
-  return { group, surface, pattern, rim, slot, labelAnchor };
+  // Floor guide from the zone's base toward the original moment (in front of Alex).
+  const guide = new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(x - Math.sign(x) * 0.42, 0.014, z + 0.12),
+      new THREE.Vector3(Math.sign(x) * 0.5, 0.014, -0.12),
+    ]),
+    new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0, depthWrite: false }),
+  );
+  guide.name = `Panel${id}Guide`;
+
+  return { group, surface, pattern, rim, slot, guide, labelAnchor };
+}
+
+function proposalTexture(): THREE.Texture {
+  const c = document.createElement('canvas');
+  c.width = 420;
+  c.height = 594;
+  const g = c.getContext('2d')!;
+  g.fillStyle = '#f4efe6';
+  g.fillRect(0, 0, c.width, c.height);
+  g.fillStyle = '#2b1d14';
+  g.font = '700 34px Georgia, serif';
+  g.fillText('PROPOSAL', 36, 78);
+  g.font = '20px sans-serif';
+  g.fillStyle = '#6b5a4d';
+  g.fillText('Draft for discussion', 36, 112);
+  g.fillStyle = '#c9b9a6';
+  for (let y = 160; y < 540; y += 22) g.fillRect(36, y, 300 + ((y * 37) % 50), 6);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
 }
 
 export function buildRoom(): RoomRig {
@@ -243,7 +276,18 @@ export function buildRoom(): RoomRig {
   const book = box(0.22, 0.03, 0.3, std(0x2f4a5a, { roughness: 0.8 }));
   book.position.set(-0.12, 0.46, -0.02);
   book.rotation.y = 0.35;
-  table.add(mug, book);
+  // Meeting context: the printed proposal, turned toward the participant, and a pen.
+  const doc = new THREE.Mesh(new THREE.BoxGeometry(0.21, 0.003, 0.297), [
+    std(0xf2ede4), std(0xf2ede4), new THREE.MeshStandardMaterial({ map: proposalTexture(), roughness: 0.9 }), std(0xf2ede4), std(0xf2ede4), std(0xf2ede4),
+  ]);
+  doc.position.set(0.05, 0.4465, 0.2);
+  doc.rotation.y = -0.18;
+  doc.receiveShadow = true;
+  const pen = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, 0.14, 8), std(0x1d2a3a, { metalness: 0.4 }));
+  pen.rotation.z = Math.PI / 2;
+  pen.rotation.y = 0.5;
+  pen.position.set(0.2, 0.45, 0.22);
+  table.add(mug, book, doc, pen);
   root.add(table);
 
   // Alex's armchair
@@ -337,7 +381,7 @@ export function buildRoom(): RoomRig {
     A: buildPanel('A', -1.62, -0.6, 0.42),
     B: buildPanel('B', 1.62, -0.6, -0.42),
   };
-  for (const p of Object.values(panels)) root.add(p.group, p.slot);
+  for (const p of Object.values(panels)) root.add(p.group, p.slot, p.guide);
 
   // Lights
   const base = { hemi: 0.55, ambient: 0.12, sun: 2.4, lamp: 5.5, face: 9 };
@@ -358,6 +402,11 @@ export function buildRoom(): RoomRig {
   const face = new THREE.SpotLight(0xffd6b0, base.face, 7, 0.42, 0.8, 1.6);
   face.position.set(0.7, 2.5, 1.7);
   face.target.position.set(0, 1.0, -0.8);
+  // Soft frontal fill so Alex's face and eyes read clearly against the bright window.
+  const faceFill = new THREE.SpotLight(0xffe6cc, 6, 5, 0.2, 0.95, 1.4);
+  faceFill.position.set(0, 1.32, 1.25);
+  faceFill.target.position.set(0, 1.22, -0.8);
+  root.add(faceFill, faceFill.target);
   const tint = new THREE.PointLight(PATH_COLOR.A, 0, 4, 2);
   tint.position.set(0, 1.4, -0.1);
   const anchorGlow = new THREE.PointLight(AMBER, 0, 3, 2);

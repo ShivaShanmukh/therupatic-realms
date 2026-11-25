@@ -1,6 +1,6 @@
 # QA report — The Living Scene (web 3D + WebXR prototype)
 
-- **Build:** web build of 13 Nov 2026 (first commit of `ShivaShanmukh/therupatic-realms`), from `npm run build` (Vite 8, Three.js 0.187, TypeScript)
+- **Build:** web build of 25 Nov 2026 with Visual lock v1 applied, from `npm run build` (Vite 8, Three.js 0.187, TypeScript)
 - **Platform tested:** Linux, Google Chrome headless with SwiftShader software WebGL, 1600×900. No GPU and no headset.
 - **Scope:** desktop behaviour, plus the VR in-world UI driven by simulated rays in a desktop preview. **No physical headset has been used.** These results say nothing about in-headset rendering, frame rate, comfort, usability, clinical safety, accessibility conformance or therapeutic effect.
 
@@ -9,7 +9,7 @@
 | Suite | Result |
 |---|---|
 | Unit (Vitest, `tests/machine.test.ts`): state machine, snapshot, rules | **24 / 24 passed** |
-| End-to-end (Playwright, `e2e/flow.spec.ts`) on the built app, incl. local relay | **20 / 20 passed** in one run, 15.1 min (`e2e-run.log`) |
+| End-to-end (Playwright, `e2e/flow.spec.ts`) on the built app, incl. local relay | **23 / 23 passed** in one clean run, 13.0 min (`e2e-run.log`). After it, two Desk-only tweaks (alert colour, "Begin A" label); the 3 affected tests were re-run and pass. |
 
 ## Acceptance matrix (manual section 17)
 
@@ -54,3 +54,18 @@
 6. **Accessibility:** T13 is a functional baseline. No full WCAG 2.2 AA audit has been done (screen reader pass, contrast measurement across all states, zoom/reflow). Reduced motion is a setting inside the app; the OS-level preference only affects CSS transitions.
 7. **Line timing** uses reading-time estimates, not audio timecodes.
 8. **Not done yet:** clinician walkthrough, user testing, comfort testing (manual gates D and E).
+
+## Visual lock v1 — release checklist (25 Nov 2026)
+
+| Check | Evidence | Status |
+|---|---|---|
+| Hold → Unfold → A → Recompose → B → Recompose works | T08 (A → R → B → R → A → R) | **Pass** |
+| Original quote, camera, room and avatar pose match after every restore | T08: data diff = 0, 3D check passes after each restore; T03 quote | **Pass** |
+| Pause / Leave work during animations, dialogue and link interruption | T09 (every live state + link loss); visual-lock test (mid-crossfade) | **Pass** |
+| Path A/B have focus, selected, explored and unavailable states | Visual-lock test: keyboard focus, Enter selects, "Explored ✓" after a visit, "Unavailable" while the link is lost | **Pass** |
+| Headset text + input actually tested; device + issues reported | **Not done.** Only the desktop preview (`&vrui`) with simulated rays. Needs Shiva on a real headset. | **Open** |
+| Desk displays state + permitted commands; developer logs stay available | Visual-lock test: link pill, "Session: …", only permitted buttons enabled; log under Diagnostics | **Pass** |
+| No console/test harness or debug overlays in the jury capture | Visual-lock test: no harness without `&dev`, Diagnostics collapsed. Record without `&dev`, `&fps` or `&vrui`. | **Pass** |
+| Caption ≤ 3 lines and no overlap with Pause/Leave/Return/label | Visual-lock test: bounding boxes don't intersect; caption ≤ 3 lines | **Pass** |
+
+Label change: path labels now read **Ask for clarity** (A) and **Share a view** (B), per the visual-lock PDF. Updated in `Scenario01_Canonical.json`; the dialogue is unchanged.

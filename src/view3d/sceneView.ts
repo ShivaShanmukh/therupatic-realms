@@ -24,7 +24,6 @@ class Tween {
   }
 }
 
-const easeOut = (x: number) => 1 - Math.pow(1 - x, 3);
 
 function isShown(o: THREE.Object3D): boolean {
   for (let n: THREE.Object3D | null = o; n; n = n.parent) if (!n.visible) return false;
@@ -155,8 +154,15 @@ export class SceneView {
     this.tw.tint.target = scene.lighting.tint ? 1 : 0;
   }
 
+  /** Zones and ring crossfade in 0.65 s (design: 0.5–0.8 s); reduced motion: near-instant. */
   private get dur() {
-    return this.reducedMotion ? 0.15 : 0.7;
+    return this.reducedMotion ? 0.15 : 0.65;
+  }
+
+  private focusPath: BranchId | null = null;
+  /** Keyboard focus on a path label highlights its zone like a hover. */
+  setFocusPath(id: BranchId | null) {
+    this.focusPath = id;
   }
 
   /** Frame-time samples (ms) for the optional fps readout. */
@@ -195,30 +201,32 @@ export class SceneView {
     if (this.tintId) lights.tint.color.setHex(PATH_COLOR[this.tintId]);
     lights.tint.intensity = 2.2 * this.tw.tint.value;
 
+    // Hold: one subtle amber ring around Alex. The floor ring stays off; the ceiling motif is decor.
     const ring = this.tw.ring.value;
-    const rs = this.reducedMotion ? 1 : 0.82 + 0.18 * easeOut(ring);
-    room.anchorRing.scale.setScalar(rs);
-    room.anchorRing.material.opacity = 0.9 * ring;
+    room.anchorRing.scale.setScalar(1);
+    room.anchorRing.material.opacity = 0.75 * ring;
     room.anchorRing.visible = ring > 0.001;
-    room.floorRing.material.opacity = 0.55 * ring;
-    room.floorRing.visible = ring > 0.001;
-    lights.anchorGlow.intensity = 0.9 * ring;
-    room.ceilingRing.material.opacity = 0.3 + 0.45 * ring;
+    room.floorRing.visible = false;
+    lights.anchorGlow.intensity = 0.6 * ring;
+    room.ceilingRing.material.opacity = 0.3;
 
+    // Unfold: thin zones crossfade in place (no rising, no scaling).
     for (const id of ['A', 'B'] as const) {
       const v = this.tw[id].value;
       const p = room.panels[id];
       p.group.visible = v > 0.001;
-      p.group.scale.y = this.reducedMotion ? 1 : Math.max(0.001, easeOut(v));
+      p.group.scale.y = 1;
       const selected = this.selection === id;
       const other = this.selection !== null && !selected;
-      const hover = this.hover === id;
-      const baseOpacity = this.highContrast ? 0.5 : 0.28;
-      p.surface.material.opacity = v * (selected ? baseOpacity + 0.15 : other ? baseOpacity * 0.6 : baseOpacity + (hover ? 0.06 : 0));
-      p.surface.material.emissiveIntensity = selected ? 0.55 : hover ? 0.38 : 0.25;
-      p.pattern.material.opacity = v * (this.highContrast ? 0.3 : 0.18);
-      p.rim.material.opacity = v * (selected ? 1 : other ? 0.5 : 0.9);
-      p.slot.material.emissiveIntensity = 0.9 * v;
+      const hover = this.hover === id || this.focusPath === id;
+      const fill = this.highContrast ? 0.16 : 0.06;
+      p.surface.material.opacity = v * (selected ? fill + 0.08 : hover ? fill + 0.05 : other ? fill * 0.6 : fill);
+      p.surface.material.emissiveIntensity = selected ? 0.5 : hover ? 0.4 : 0.25;
+      p.pattern.material.opacity = v * (this.highContrast ? 0.16 : 0.07) * (selected || hover ? 1.6 : 1);
+      p.rim.material.opacity = v * (selected || hover ? 1 : other ? 0.45 : 0.85);
+      p.slot.material.emissiveIntensity = 0.45 * v;
+      p.guide.material.opacity = v * (selected ? 0.9 : 0.5);
+      p.guide.visible = v > 0.001;
     }
   }
 
@@ -228,6 +236,11 @@ export class SceneView {
     const w = this.container.clientWidth;
     const h = this.container.clientHeight;
     return { x: (v.x * 0.5 + 0.5) * w, y: (-v.y * 0.5 + 0.5) * h, visible: v.z < 1 };
+  }
+
+  /** Path zone currently under the mouse or a controller ray. */
+  get hoveredPath(): BranchId | null {
+    return this.hover;
   }
 
   panelReveal(id: BranchId) {

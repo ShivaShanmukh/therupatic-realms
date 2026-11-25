@@ -30,6 +30,7 @@ This builds the Living Scene interaction from the V3 developer handoff (19 Oct 2
 | `&vrui` | Desktop preview of the in-world VR panels (no headset needed) |
 | `&fps` | Frame-time readout in VR |
 | `&fast` | Short line timings (automated tests) |
+| `&dev` | Show the Desk's test harness (inside the collapsed Diagnostics). Leave it off for the jury recording. |
 
 ### Running a VR session (headset + laptop)
 
@@ -50,6 +51,18 @@ cd relay && npm install && npm start      # listens on $PORT (default 8787)
 ```
 
 Deploy it anywhere that runs Node and supports WebSockets (Railway, Render, Fly.io). Set `ALLOWED_ORIGINS=https://shivashanmukh.github.io` to refuse other sites. Pages is served over HTTPS, so the relay must be reached via `wss://`.
+
+## Visual lock v1 (25 Nov 2026)
+
+Visual-only changes from *Therapeutic_Realms_Shiva_Visual_Changes_V1.pdf*. Logic, snapshot, branching and permissions are unchanged.
+
+- **Unfold:** thin, outlined zones (blue **Path A · Ask for clarity** on the left, violet **Path B · Share a view** on the right) crossfade in over 0.65 s, with floor lines to the original moment between them. Compact tags show hover/focus, selected, explored and unavailable states.
+- **Hold:** one amber ring around the frozen Alex and a compact card: *Moment held · original quote · Held by your therapist*. No options.
+- **Explore:** persistent *Hypothetical · Path A/B* label. One caption panel with speaker attribution (*Alex · fictional continuation*), at most 3 lines.
+- **Recompose:** zones fade out, the original is restored, and a brief *Original moment restored* toast shows for 3.5 s.
+- **Participant UI:** Pause/Leave fixed and never overlapped. Floating side cards removed. Higher-contrast captions. Participant copy says "therapist".
+- **Scene:** soft front light on Alex's face, eye whites, a printed proposal on the table.
+- **Director Desk:** link status and session state first, then the permitted commands. Event log collapsed under Diagnostics. Test harness only with `&dev`.
 
 ## How it is built
 

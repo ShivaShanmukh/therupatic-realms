@@ -20,7 +20,7 @@ async function settled(p: Page) {
   await p.waitForFunction(() => (window as any).__tr.inspect().settled, null, { timeout: 20_000 });
 }
 
-async function boot(p: Page, query = '?fast') {
+async function boot(p: Page, query = '?fast&dev') {
   await p.goto(`/${query}`);
   await expect(p.getByTestId('enter')).toBeVisible();
 }
@@ -57,7 +57,7 @@ async function explore(p: Page, b: 'A' | 'B') {
 }
 
 async function rawSend(p: Page, type: string) {
-  const h = p.locator('details.harness');
+  const h = p.locator('details.diagnostics');
   if (!(await h.evaluate((d: HTMLDetailsElement) => d.open))) await h.locator('summary').click();
   await p.getByTestId('raw-type').selectOption(type);
   await p.getByTestId('raw-send').click();
@@ -84,7 +84,7 @@ test('T02 start: rejected while disconnected, accepted when connected + ready', 
   await rawSend(page, 'START');
   await expect(page.getByTestId('desk-notice')).toContainText('disconnected');
   await desk(page, 'CONNECT').click();
-  await expect(page.getByTestId('wait-connected')).toContainText('Practitioner connected');
+  await expect(page.getByTestId('wait-connected')).toContainText('Therapist connected');
   await desk(page, 'START').click();
   await expect.poll(() => phase(page)).toBe('CONVERSATION');
 });
@@ -96,7 +96,7 @@ test('T03 canonical line is identical in conversation, hold, unfold, restore and
   await desk(page, 'HOLD').click();
   await expect(page.getByTestId('original-quote')).toContainText(`“${ORIGINAL}”`);
   await desk(page, 'UNFOLD').click();
-  await expect(page.getByTestId('original-quote')).toContainText('unchanged');
+  await expect(page.getByTestId('original-quote')).toContainText(/unchanged/i);
   await expect(page.getByTestId('original-quote')).toContainText(`“${ORIGINAL}”`);
   await explore(page, 'A');
   await desk(page, 'RECOMPOSE').click();
@@ -110,7 +110,8 @@ test('T04 hold freezes Alex at M01 and shows no branch options', async ({ page }
   await toM01(page);
   await expect(desk(page, 'HOLD')).toBeEnabled();
   await desk(page, 'HOLD').click();
-  await expect(page.getByTestId('state-note')).toContainText('Moment held');
+  await expect(page.getByTestId('original-quote')).toContainText(/moment held/i);
+  await expect(page.getByTestId('original-quote')).toContainText('Held by your therapist');
   await expect(page.getByTestId('path-A')).toBeHidden();
   await expect(page.getByTestId('path-B')).toBeHidden();
   await settled(page);
@@ -134,8 +135,10 @@ test('T05 unfold keeps the same room and labels both paths hypothetical', async 
   expect(after.landmarks).toEqual(before.landmarks);
   expect(after.camera).toEqual(before.camera);
   expect(after.panels).toEqual({ A: 1, B: 1 });
-  await expect(page.getByTestId('path-A')).toContainText('Hypothetical · Path A');
-  await expect(page.getByTestId('path-B')).toContainText('Hypothetical · Path B');
+  await expect(page.getByTestId('path-A')).toContainText('Path A · Hypothetical');
+  await expect(page.getByTestId('path-A')).toContainText('Ask for clarity');
+  await expect(page.getByTestId('path-B')).toContainText('Path B · Hypothetical');
+  await expect(page.getByTestId('path-B')).toContainText('Share a view');
   await expect(page.getByTestId('original-quote')).toBeVisible();
   // left / right placement
   const ax = (await page.getByTestId('path-A').boundingBox())!.x;
@@ -169,9 +172,8 @@ for (const [b, you, alex] of [
     const alexIdx = caps.findIndex((c) => c.includes(alex));
     expect(youIdx).toBeGreaterThanOrEqual(0);
     expect(alexIdx).toBeGreaterThan(youIdx);
-    expect(caps[youIdx]).toContain(`Hypothetical · Path ${b}`);
-    expect(caps[youIdx]).toContain('You (hypothetical)');
-    expect(caps[alexIdx]).toContain(`Hypothetical · Path ${b}`);
+    expect(caps[youIdx]).toContain('You · hypothetical line');
+    expect(caps[alexIdx]).toContain('Alex · fictional continuation');
     await expect(page.getByTestId('hyp-badge')).toContainText(`Hypothetical · Path ${b}`);
   });
 }
@@ -185,6 +187,7 @@ test('T08 restore repeat: A → R → B → R → A → R restores the exact ori
     await explore(page, b);
     await expect.poll(async () => (await session(page)).branchStep, { timeout: 15_000 }).toBe(2);
     await desk(page, 'RECOMPOSE').click();
+    await expect(page.getByTestId('state-note')).toContainText('Original moment restored'); // brief confirmation
     await expect(page.getByTestId('ro-restore-data')).toContainText('PASS');
     await expect(page.getByTestId('ro-restore-3d')).toContainText('PASS', { timeout: 20_000 });
     const now = await inspect(page);
@@ -193,7 +196,6 @@ test('T08 restore repeat: A → R → B → R → A → R restores the exact ori
     expect(alexNow).toEqual(alexBase);
     expect(now.camera).toEqual(baseline.camera);
     expect(now.landmarks).toEqual(baseline.landmarks);
-    await expect(page.getByTestId('state-note')).toContainText('Original moment restored');
   }
   await expect(page.getByTestId('ro-visited')).toHaveText('Path A, Path B');
 });
@@ -224,7 +226,7 @@ test('T09 safety: Pause and Leave in every live state, including while disconnec
   }
   // now disconnected AND paused: Leave still works immediately
   await desk(page, 'DROP').click();
-  await expect(page.getByTestId('pause-overlay')).toContainText('Connection to your practitioner was lost');
+  await expect(page.getByTestId('pause-overlay')).toContainText('Connection to your therapist was lost');
   await page.keyboard.press('Escape');
   await expect(page.getByTestId('pause-overlay')).toContainText('Paused');
   await page.getByTestId('leave-overlay').click();
@@ -260,7 +262,7 @@ test('T11 disconnect mid-Explore halts; reconnect + explicit resume required', a
   await toHeld(page);
   await explore(page, 'A');
   await desk(page, 'DROP').click();
-  await expect(page.getByTestId('pause-overlay')).toContainText('Connection to your practitioner was lost');
+  await expect(page.getByTestId('pause-overlay')).toContainText('Connection to your therapist was lost');
   const step = (await session(page)).branchStep;
   await page.waitForTimeout(1500);
   expect((await session(page)).branchStep).toBe(step); // nothing progressed
@@ -372,7 +374,7 @@ test('Participant view never contains clinician controls', async ({ page }) => {
   await desk(page, 'UNFOLD').click();
   const inside = await page.getByTestId('participant-view').locator('[data-testid^="desk-"]').count();
   expect(inside).toBe(0);
-  for (const label of ['Hold', 'Unfold', 'Recompose', 'Begin branch', 'Start']) {
+  for (const label of ['Hold', 'Unfold', 'Recompose', 'Begin path', 'Reflect', 'Start']) {
     await expect(page.getByTestId('participant-view').getByRole('button', { name: label, exact: true })).toHaveCount(0);
   }
 });
@@ -396,7 +398,7 @@ test('Separate-window Director Desk drives the participant; closing it counts as
   await d.getByTestId('desk-HOLD').click();
   await expect.poll(() => phase(p)).toBe('HELD');
   await d.close();
-  await expect(p.getByTestId('pause-overlay')).toContainText('Connection to your practitioner was lost', { timeout: 6000 });
+  await expect(p.getByTestId('pause-overlay')).toContainText('Connection to your therapist was lost', { timeout: 6000 });
   await expect(p.getByTestId('leave-overlay')).toBeVisible();
 });
 
@@ -501,6 +503,75 @@ test('Relay: Desk on another "device" joins by code, drives Hold, and closing it
   await d.getByTestId('desk-HOLD').click();
   await expect.poll(() => phase(p)).toBe('HELD');
   await dc.close();
-  await expect(p.getByTestId('pause-overlay')).toContainText('Connection to your practitioner was lost', { timeout: 10_000 });
+  await expect(p.getByTestId('pause-overlay')).toContainText('Connection to your therapist was lost', { timeout: 10_000 });
   await pc.close();
+});
+
+// ---------------- Visual lock v1 release checks ----------------
+test('Visual lock: path zones show focus, selected, explored and unavailable states; Pause/Leave stay reachable mid-transition', async ({ page }) => {
+  test.slow();
+  await boot(page);
+  await toHeld(page);
+  await expect(page.getByTestId('state-note')).toBeHidden(); // no floating side card while held
+  await desk(page, 'UNFOLD').click();
+  // during the crossfade the safety controls are still there
+  await expect(page.getByTestId('pause')).toBeVisible();
+  await expect(page.getByTestId('leave')).toBeVisible();
+  await settled(page);
+  // focus
+  await page.getByTestId('path-A').focus();
+  await expect(page.getByTestId('path-A')).toBeFocused();
+  // selected
+  await page.keyboard.press('Enter');
+  await expect(page.getByTestId('path-A-state')).toHaveText('Selected');
+  await expect(page.getByTestId('path-A')).toHaveAttribute('aria-pressed', 'true');
+  // explored (after visiting A and coming back)
+  await desk(page, 'BEGIN_BRANCH').click();
+  await expect(page.getByTestId('hyp-badge')).toContainText('Hypothetical · Path A');
+  await expect(page.getByTestId('request-return')).toBeVisible();
+  await expect(page.getByTestId('pause')).toBeVisible();
+  await desk(page, 'RECOMPOSE').click();
+  await desk(page, 'UNFOLD').click();
+  await settled(page);
+  await expect(page.getByTestId('path-A-state')).toHaveText('Explored ✓');
+  await expect(page.getByTestId('path-B-state')).toBeHidden();
+  // unavailable while the link is down
+  await desk(page, 'DROP').click();
+  await expect(page.getByTestId('path-A')).toBeDisabled();
+  await expect(page.getByTestId('path-A-state')).toHaveText('Unavailable');
+});
+
+test('Visual lock: no overlap between caption and Pause/Leave/Return while exploring', async ({ page }) => {
+  await boot(page);
+  await toHeld(page);
+  await explore(page, 'B');
+  await expect.poll(async () => (await session(page)).branchStep).toBe(2);
+  const boxes = await Promise.all(['caption', 'pause', 'leave', 'request-return', 'hyp-badge'].map((id) => page.getByTestId(id).boundingBox()));
+  const overlap = (a: any, b: any) => a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+  for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) expect(overlap(boxes[i], boxes[j]), `${i}/${j}`).toBe(false);
+  // caption stays within 3 lines
+  const lines = await page.locator('.caption-text').evaluate((el) => Math.round(el.getBoundingClientRect().height / parseFloat(getComputedStyle(el).lineHeight)));
+  expect(lines).toBeLessThanOrEqual(3);
+});
+
+test('Visual lock: jury capture has no test harness or open debug log; Desk shows state + permitted commands', async ({ page }) => {
+  await page.goto('/?fast');
+  await expect(page.getByTestId('desk-harness')).toHaveCount(0);
+  await expect(page.getByTestId('raw-send')).toHaveCount(0);
+  expect(await page.getByTestId('desk-diagnostics').evaluate((d: HTMLDetailsElement) => d.open)).toBe(false);
+  await page.getByTestId('enter').click();
+  await page.getByTestId('ack').check();
+  await page.getByTestId('continue').click();
+  await page.getByTestId('ready').click();
+  await desk(page, 'CONNECT').click();
+  await expect(page.getByTestId('desk-link')).toHaveText('Connected');
+  await expect(page.getByTestId('desk-phase')).toHaveText('Session: Waiting to start');
+  await expect(desk(page, 'START')).toBeEnabled();
+  await expect(desk(page, 'HOLD')).toBeDisabled();
+  await desk(page, 'START').click();
+  await page.waitForFunction(() => (window as any).__tr.session().m01Reached);
+  await desk(page, 'HOLD').click();
+  await expect(page.getByTestId('desk-phase')).toHaveText('Session: Moment held');
+  await expect(desk(page, 'UNFOLD')).toBeEnabled();
+  await expect(desk(page, 'RECOMPOSE')).toBeDisabled();
 });

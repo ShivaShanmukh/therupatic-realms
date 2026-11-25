@@ -18,6 +18,24 @@ export interface DeskPort {
   restore3D?: () => { status: 'pending' | 'pass' | 'fail' | 'n/a'; diffs: string[] };
 }
 
+const PHASE_NAMES: Record<Session['phase'], string> = {
+  WELCOME: 'Welcome',
+  PREPARE: 'Preparing',
+  WAITING: 'Waiting to start',
+  CONVERSATION: 'Conversation',
+  HELD: 'Moment held',
+  UNFOLDED: 'Unfolded',
+  EXPLORING: 'Exploring',
+  RECOMPOSED: 'Original restored',
+  REFLECTION: 'Reflection',
+  ENDED: 'Ended',
+  LEFT: 'Participant left',
+};
+function phaseName(s: Session): string {
+  if (s.phase === 'EXPLORING' && s.activeBranch) return `Exploring Path ${s.activeBranch}`;
+  return PHASE_NAMES[s.phase];
+}
+
 const RAW_TYPES: EventType[] = ['START', 'HOLD', 'UNFOLD', 'BEGIN_BRANCH', 'RECOMPOSE', 'REFLECT', 'RESUME_SESSION', 'END', 'CONNECT'];
 
 export class DirectorDesk {
@@ -31,6 +49,9 @@ export class DirectorDesk {
   private preview: HTMLCanvasElement | null = null;
   private previewCtx: CanvasRenderingContext2D | null = null;
   private previewText: HTMLElement;
+  private linkPill = h('span', { class: 'link-pill', 'data-testid': 'desk-link' });
+  private phaseLabel = h('span', { class: 'phase-label', 'data-testid': 'desk-phase' });
+  private alerts = h('div', { class: 'desk-alerts', 'data-testid': 'desk-alerts', role: 'status', 'aria-live': 'polite' });
 
   constructor(host: HTMLElement, private port: DeskPort) {
     host.classList.add('desk');
@@ -58,10 +79,34 @@ export class DirectorDesk {
 
     const rawSelect = h('select', { 'aria-label': 'Command', 'data-testid': 'raw-type' }, ...RAW_TYPES.map((t) => h('option', { value: t }, t)));
 
+    const dev = new URLSearchParams(location.search).has('dev');
     host.append(
-      h('header', { class: 'desk-head' }, h('h2', {}, 'Director Desk'), h('p', {}, 'Clinician only · not shown to the participant')),
-      h('section', { class: 'desk-sec' }, h('h3', {}, 'Participant view'), this.preview, this.previewText),
-      h('section', { class: 'desk-sec' }, h('h3', {}, 'Session'), this.readouts),
+      // 1. Status first: who is connected, what state the session is in, anything needing attention.
+      h(
+        'header',
+        { class: 'desk-head' },
+        h('div', { class: 'desk-title' }, h('h2', {}, 'Director Desk'), h('span', {}, 'Therapist only · not shown to the participant')),
+        h('div', { class: 'desk-status-bar' }, this.linkPill, this.phaseLabel),
+        this.alerts,
+      ),
+      // 2. Primary controls — only permitted commands are enabled.
+      h(
+        'section',
+        { class: 'desk-sec desk-primary' },
+        h(
+          'div',
+          { class: 'desk-grid' },
+          btn('START', 'Start', () => port.send('START')),
+          btn('HOLD', 'Hold', () => port.send('HOLD')),
+          btn('UNFOLD', 'Unfold', () => port.send('UNFOLD')),
+          btn('BEGIN_BRANCH', 'Begin path', () => port.send('BEGIN_BRANCH', { branch: this.s?.selection })),
+          btn('RECOMPOSE', 'Recompose', () => port.send('RECOMPOSE')),
+          btn('REFLECT', 'Reflect', () => port.send('REFLECT', { justification: this.justification.value })),
+        ),
+        this.justWrap,
+        this.notice,
+      ),
+      // 3. Link + end.
       h(
         'section',
         { class: 'desk-sec' },
@@ -72,45 +117,37 @@ export class DirectorDesk {
           btn('CONNECT', 'Connect', () => port.send('CONNECT')),
           btn('DROP', 'Simulate link loss', () => port.dropLink(), 'btn desk-btn warn'),
           btn('RESUME_SESSION', 'Resume session', () => port.send('RESUME_SESSION')),
+          btn('END', 'End session', () => port.send('END'), 'btn desk-btn danger'),
         ),
       ),
-      h(
-        'section',
-        { class: 'desk-sec' },
-        h('h3', {}, 'Scene commands'),
-        h(
-          'div',
-          { class: 'desk-grid' },
-          btn('START', 'Start', () => port.send('START')),
-          btn('HOLD', `Hold at ${ANCHOR_ID}`, () => port.send('HOLD')),
-          btn('UNFOLD', 'Unfold', () => port.send('UNFOLD')),
-          btn('BEGIN_BRANCH', 'Begin branch', () => port.send('BEGIN_BRANCH', { branch: this.s?.selection })),
-          btn('RECOMPOSE', 'Recompose', () => port.send('RECOMPOSE')),
-          btn('REFLECT', 'Reflect / Finish', () => port.send('REFLECT', { justification: this.justification.value })),
-        ),
-        this.justWrap,
-        h('div', { class: 'desk-row' }, btn('END', 'End session', () => port.send('END'), 'btn desk-btn danger')),
-        this.notice,
-      ),
+      h('section', { class: 'desk-sec' }, h('h3', {}, 'Participant view'), this.preview, this.previewText),
+      h('section', { class: 'desk-sec' }, h('h3', {}, 'Session details'), this.readouts),
+      // 4. Developer material, collapsed. The test harness exists only with ?dev.
       h(
         'details',
-        { class: 'desk-sec harness' },
-        h('summary', {}, 'Test harness (developer only)'),
-        h('p', { class: 'fine' }, 'Sends commands even when the button would be disabled, to prove the rules reject them.'),
-        h(
-          'div',
-          { class: 'desk-row' },
-          rawSelect,
-          h('button', { class: 'btn desk-btn', 'data-testid': 'raw-send', onclick: () => port.sendAs('clinician', rawSelect.value as EventType, { branch: this.s?.selection ?? 'A' }) }, 'Send anyway'),
-        ),
-        h(
-          'div',
-          { class: 'desk-row' },
-          h('button', { class: 'btn desk-btn', 'data-testid': 'raw-dup', onclick: () => port.resendLast() }, 'Re-send last event (duplicate)'),
-          port.openSeparate ? h('button', { class: 'btn desk-btn', onclick: () => port.openSeparate!() }, 'Open desk in separate window') : null,
-        ),
+        { class: 'desk-sec diagnostics', 'data-testid': 'desk-diagnostics' },
+        h('summary', {}, 'Diagnostics · event log'),
+        this.log,
+        dev
+          ? h(
+              'div',
+              { class: 'harness', 'data-testid': 'desk-harness' },
+              h('p', { class: 'fine' }, 'Test harness (dev only): sends commands even when the button would be disabled, to prove the rules reject them.'),
+              h(
+                'div',
+                { class: 'desk-row' },
+                rawSelect,
+                h('button', { class: 'btn desk-btn', 'data-testid': 'raw-send', onclick: () => port.sendAs('clinician', rawSelect.value as EventType, { branch: this.s?.selection ?? 'A' }) }, 'Send anyway'),
+              ),
+              h(
+                'div',
+                { class: 'desk-row' },
+                h('button', { class: 'btn desk-btn', 'data-testid': 'raw-dup', onclick: () => port.resendLast() }, 'Re-send last event (duplicate)'),
+                port.openSeparate ? h('button', { class: 'btn desk-btn', onclick: () => port.openSeparate!() }, 'Open desk in separate window') : null,
+              ),
+            )
+          : null,
       ),
-      h('section', { class: 'desk-sec' }, h('h3', {}, 'Event log'), this.log),
     );
 
     port.subscribe((s, last) => this.update(s, last));
@@ -126,7 +163,19 @@ export class DirectorDesk {
       else b.disabled = !o[k as keyof typeof o];
     }
     const begin = this.buttons.BEGIN_BRANCH!;
-    begin.textContent = s.selection ? `Begin Path ${s.selection} · ${BRANCHES[s.selection].label}` : 'Begin branch (waiting for choice)';
+    begin.textContent = s.selection ? `Begin ${s.selection}` : 'Begin path';
+    begin.title = s.selection ? BRANCHES[s.selection].label : 'Waiting for the participant to choose';
+
+    const link = !s.clinicianConnected ? (s.linkHalted ? 'Link lost' : 'Disconnected') : s.linkHalted ? 'Connected · halted' : 'Connected';
+    this.linkPill.textContent = link;
+    this.linkPill.dataset.ok = String(s.clinicianConnected && !s.linkHalted);
+    this.phaseLabel.textContent = `Session: ${phaseName(s)}`;
+    const alerts: Array<[string, 'warn' | 'info']> = [];
+    if (s.linkHalted) alerts.push(['Scene halted after link loss — reconnect, then Resume session', 'warn']);
+    if (s.participantPaused) alerts.push(['Participant paused', 'warn']);
+    if (s.returnRequested) alerts.push(['Participant asked to return to the original', 'info']);
+    if (s.phase === 'UNFOLDED' && s.selection) alerts.push([`Participant chose Path ${s.selection} · ${BRANCHES[s.selection].label}`, 'info']);
+    this.alerts.replaceChildren(...alerts.map(([a, kind]) => h('span', { class: 'desk-alert', 'data-kind': kind }, a)));
     this.justWrap.hidden = !(s.visited.length === 0 && (s.phase === 'HELD' || s.phase === 'UNFOLDED'));
     if (!this.justWrap.hidden) {
       const ok = s.clinicianConnected && !s.linkHalted && !s.participantPaused;
@@ -140,7 +189,7 @@ export class DirectorDesk {
     const r3 = this.port.restore3D?.();
     const rows: Array<[string, string, string?]> = [
       ['State', s.phase, 'state'],
-      ['Practitioner link', s.clinicianConnected ? (s.linkHalted ? 'Connected · halted' : 'Connected') : s.linkHalted ? 'LOST · scene halted' : 'Disconnected', 'link'],
+      ['Therapist link', s.clinicianConnected ? (s.linkHalted ? 'Connected · halted' : 'Connected') : s.linkHalted ? 'LOST · scene halted' : 'Disconnected', 'link'],
       ['Participant', s.participantReady ? 'Ready' : 'Not ready', 'ready'],
       ['Participant pause', s.participantPaused ? 'PAUSED by participant' : 'No', 'paused'],
       ['Original moment', s.snapshot ? `${s.snapshot.anchorId} saved · locked` : `${ANCHOR_ID} not yet captured`, 'anchor'],

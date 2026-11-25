@@ -13,13 +13,13 @@
   "hypotheticalBranches": [
     {
       "id": "A",
-      "label": "Ask for more detail",
+      "label": "Ask for clarity",
       "participantLine": "Could you tell me which part you would like to revisit?",
       "alexLine": "The structure is promising. I would like clearer evidence for the proposed timeline."
     },
     {
       "id": "B",
-      "label": "Share your concern",
+      "label": "Share a view",
       "participantLine": "I feel uneasy hearing that. Could you explain what needs changing?",
       "alexLine": "I understand. My main concern is that we have not discussed the revised requirements yet."
     }

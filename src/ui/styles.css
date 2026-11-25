@@ -87,30 +87,9 @@ main.solo .participant { border-radius: 0; border: 0; max-width: calc((100vh - 4
 .quote-kicker { display: inline-flex; gap: 0.4em; align-items: center; font-size: 0.75em; letter-spacing: 0.18em; text-transform: uppercase; color: var(--amber); font-weight: 700; }
 .quote-text { display: block; margin-top: 0.25em; font-size: 1.25em; }
 
-.path-label {
-  position: absolute; left: 0; top: 0; width: 19%; min-width: 190px; text-align: left;
-  display: flex; flex-direction: column; gap: 0.3em; padding: 0.9em 1em; border-radius: 14px;
-  font: inherit; color: var(--ink); cursor: pointer; background: rgba(12, 14, 24, 0.55);
-  border: 1.5px solid currentColor; transition: background 0.2s, box-shadow 0.2s;
-}
-.path-a { color: var(--a); }
-.path-b { color: var(--b); }
-.path-label > span:not(.path-kicker) { color: var(--ink); }
-.path-label.selected { background: rgba(12, 14, 24, 0.85); box-shadow: 0 0 0 3px currentColor, 0 0 28px currentColor; }
-.path-label:hover:not(:disabled) { background: rgba(12, 14, 24, 0.75); }
-.path-kicker { font-size: 0.72em; font-weight: 800; letter-spacing: 0.1em; white-space: nowrap; text-transform: uppercase; }
-.path-title { font-size: 1.15em; font-weight: 600; }
-.path-sub { font-size: 0.85em; color: var(--ink-2) !important; }
-.path-action { margin-top: 0.4em; font-size: 0.82em; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
-
-.state-note { position: absolute; right: 2.2%; top: 9%; max-width: 26%; padding: 0.9em 1.1em; border-radius: 14px; background: var(--glass); border: 1px solid var(--line); }
-.state-note p { margin: 0.35em 0 0; color: var(--ink-2); line-height: 1.4; font-size: 0.92em; }
-.note-title { color: var(--amber-ink); }
-
-.hyp-badge { position: absolute; left: 2.2%; top: 7%; display: flex; flex-direction: column; gap: 0.2em; padding: 0.8em 1.1em; border-radius: 14px; background: rgba(12, 14, 24, 0.86); border: 2px solid currentColor; max-width: 30%; }
-.hyp-kicker { font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; font-size: 0.8em; }
-.hyp-title { color: var(--ink); font-size: 1.15em; font-weight: 600; }
-.hyp-sub { color: var(--ink-2); font-size: 0.85em; }
+.state-note { position: absolute; left: 50%; top: 4%; transform: translateX(-50%); padding: 0.6em 1.2em; border-radius: 999px; background: rgba(30, 20, 12, 0.94); border: 1.5px solid var(--amber); text-align: center; white-space: nowrap; }
+.state-note p { margin: 0.15em 0 0; color: var(--ink-2); font-size: 0.85em; }
+.note-title { color: var(--amber-ink); letter-spacing: 0.04em; }
 
 /* ---------- full-screen cards ---------- */
 .screen-host, .overlay-host { position: absolute; inset: 0; display: grid; place-items: center; padding: 3%; }
@@ -219,3 +198,65 @@ body.in-vr .p-layer { visibility: hidden; }
 .code-form h2 { margin: 0; font-size: 20px; }
 .code-form p { margin: 0; color: #5a4c42; }
 .code-form input { min-height: 48px; font: 600 22px ui-monospace, Menlo, monospace; letter-spacing: 0.2em; text-transform: uppercase; padding: 0 12px; border-radius: 10px; border: 1.5px solid #bfae9f; }
+
+/* ---------- Visual lock v1 ---------- */
+.phase-hint { position: absolute; top: 6.2%; left: 2.2%; max-width: 46%; font-size: 0.92em; color: #fff; background: rgba(14, 10, 9, 0.82); padding: 0.35em 0.8em; border-radius: 999px; }
+
+/* Original moment: compact amber card under Alex */
+.quote-card { max-width: 30%; padding: 0.55em 1.1em 0.6em; background: rgba(24, 16, 10, 0.92); box-shadow: 0 0 18px rgba(242, 179, 102, 0.18); }
+.quote-text { font-size: 1.12em; color: #fff; }
+.quote-sub { display: block; margin-top: 0.25em; font-size: 0.78em; color: #e9d8c4; }
+
+/* Path zones: compact tags at the top of each thin zone */
+.path-tag {
+  position: absolute; left: 0; top: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 0.15em;
+  min-width: 9.5em; padding: 0.5em 0.85em; border-radius: 10px; text-align: left; font: inherit; cursor: pointer;
+  color: var(--ink); background: rgba(10, 12, 22, 0.78); border: 1.5px solid currentColor;
+  transition: background 0.2s, box-shadow 0.2s, opacity 0.2s;
+}
+.path-tag.path-a { color: var(--a); }
+.path-tag.path-b { color: var(--b); }
+.path-tag .path-kicker { font-size: 0.72em; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; white-space: nowrap; }
+.path-tag .path-title { color: #fff; font-size: 1.05em; font-weight: 600; white-space: nowrap; }
+.path-tag .path-state { color: #fff; font-size: 0.75em; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.1em 0.5em; border-radius: 999px; border: 1px solid currentColor; }
+.path-tag:hover:not(:disabled), .path-tag.hover:not(:disabled), .path-tag:focus-visible { background: rgba(10, 12, 22, 0.94); box-shadow: 0 0 0 2px currentColor; }
+.path-tag.selected { background: rgba(10, 12, 22, 0.96); box-shadow: 0 0 0 3px currentColor, 0 0 22px currentColor; }
+.path-tag.selected .path-state { background: currentColor; }
+.path-tag.selected .path-state { color: #0c0e18; }
+.path-tag.explored:not(.selected) .path-state { border-style: dashed; }
+.path-tag.unavailable, .path-tag:disabled { opacity: 0.5 !important; cursor: not-allowed; }
+.path-tag.revealing { pointer-events: none; }
+
+/* Explore: persistent hypothetical label */
+.hyp-badge { position: absolute; left: 2.2%; top: 6.2%; display: flex; flex-direction: column; gap: 0.1em; padding: 0.5em 0.95em; border-radius: 10px; background: rgba(10, 12, 22, 0.9); border: 2px solid currentColor; }
+.hyp-kicker { font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; font-size: 0.8em; }
+.hyp-title { color: #fff; font-size: 1em; font-weight: 600; }
+
+/* One caption panel: speaker attribution + at most 2–3 lines, clear of Pause/Leave and Return */
+.caption { bottom: 13%; max-width: 58%; min-width: 34%; background: rgba(10, 7, 6, 0.93); border-color: rgba(255, 226, 190, 0.45); border-left-width: 4px; }
+.caption[data-branch='A'] { border-left-color: var(--a); }
+.caption[data-branch='B'] { border-left-color: var(--b); }
+.caption-head .speaker { color: #f3e6d7; text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.95em; }
+.caption-text { color: #fff; }
+.participant[data-caption-size='L'] .caption { max-width: 66%; }
+.fine { color: #d8cabb !important; }
+.phase-tag { color: #ffe3b8; }
+.path-a { color: var(--a); }
+.path-b { color: var(--b); }
+.reflect-path .path-kicker { font-size: 0.72em; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
+
+/* Director Desk: status + primary controls first */
+.desk-head { display: grid; gap: 8px; }
+.desk-title { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.desk-title span { font-size: 12px; color: #5a4c42; }
+.desk-status-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.link-pill { font-weight: 700; font-size: 13px; padding: 4px 12px; border-radius: 999px; background: #f3d9d2; color: #8a2a14; }
+.link-pill[data-ok='true'] { background: #d9efdc; color: #22582c; }
+.phase-label { font-weight: 800; font-size: 14px; letter-spacing: 0.06em; text-transform: uppercase; }
+.desk-alerts { display: flex; flex-direction: column; gap: 4px; }
+.desk-alert { font-size: 13px; font-weight: 600; color: #8a2a14; background: #fbe9e3; border-radius: 8px; padding: 5px 9px; }
+.desk-primary { border-top: none; padding-top: 4px; }
+.desk-primary .desk-grid { grid-template-columns: 1fr 1fr 1fr; }
+.diagnostics summary { cursor: pointer; font-size: 12px; color: #6b5a4d; min-height: 32px; display: flex; align-items: center; }
+.diagnostics .desk-log { margin-top: 6px; }
+.desk-alert[data-kind='info'] { color: #6a4210; background: #fbf0dc; }

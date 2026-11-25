@@ -16,19 +16,14 @@ export interface VRPort {
   exitVR: () => void;
 }
 
-const PHASE_TITLE: Partial<Record<Session['phase'], string>> = {
-  CONVERSATION: '04 · The conversation',
-  HELD: '05 · Moment held',
-  UNFOLDED: '06 · Unfold the scene',
-  EXPLORING: '07 · Explore a possibility',
-  RECOMPOSED: '08 · Original moment restored',
-};
 
 export class VRUI {
   readonly panels: Record<string, CanvasPanel>;
   private s: Session | null = null;
   private active = false;
   private eye = new THREE.Vector3();
+  private restoredAt = 0;
+  private lastRestore = 0;
 
   constructor(private view: SceneView, private port: VRPort, private showFps = false) {
     const P = (name: string, w: number, h: number, px = 1000) => new CanvasPanel(name, w, h, px);
@@ -36,10 +31,11 @@ export class VRUI {
       main: P('main', 1.1, 0.82),
       caption: P('caption', 1.15, 0.3),
       quote: P('quote', 1.3, 0.3),
-      A: P('pathA', 0.92, 0.6),
-      B: P('pathB', 0.92, 0.6),
-      note: P('note', 0.64, 0.3),
-      badge: P('badge', 0.64, 0.28),
+      A: P('pathA', 0.78, 0.34),
+      B: P('pathB', 0.78, 0.34),
+      note: P('note', 0.6, 0.2),
+      hint: P('hint', 0.8, 0.11),
+      badge: P('badge', 0.62, 0.17),
       safety: P('safety', 0.46, 0.13),
       ret: P('return', 0.52, 0.13),
       fps: P('fps', 0.34, 0.07),
@@ -53,10 +49,11 @@ export class VRUI {
     place(this.panels.main, 0, 1.0, 1.42);
     place(this.panels.caption, 0, 0.8, 1.38);
     place(this.panels.quote, 0, 0.66, -0.12);
-    place(this.panels.note, 0.56, 1.32, 1.3);
+    place(this.panels.note, 0, 1.5, 1.2);
+    place(this.panels.hint, 0, 1.5, 1.2);
     place(this.panels.badge, -0.56, 1.32, 1.3);
-    place(this.panels.safety, 0.4, 0.76, 1.66);
-    place(this.panels.ret, -0.42, 0.76, 1.66);
+    place(this.panels.safety, 0.52, 0.6, 1.72);
+    place(this.panels.ret, -0.52, 0.6, 1.72);
     place(this.panels.fps, 0, 1.56, 1.3);
     // Path labels ride on the hypothetical panels, so they rise with them.
     for (const id of ['A', 'B'] as const) {
@@ -78,7 +75,7 @@ export class VRUI {
 
   private faceEye() {
     this.eye.copy(this.view.rig.position);
-    for (const k of ['main', 'caption', 'quote', 'note', 'badge', 'safety', 'ret', 'fps']) this.panels[k].mesh.lookAt(this.eye);
+    for (const k of ['main', 'caption', 'quote', 'note', 'hint', 'badge', 'safety', 'ret', 'fps']) this.panels[k].mesh.lookAt(this.eye);
   }
 
   update(s: Session) {
@@ -112,18 +109,9 @@ export class VRUI {
       P.caption.set(`${JSON.stringify(cap)}|${s.settings.captionSize}|${hc}`, (p) => {
         p.card(cap.kind === 'hypothetical' ? C[cap.branch!] : C.border);
         const scale = { S: 0.85, M: 1, L: 1.22 }[s.settings.captionSize];
-        let x = 40;
-        if (cap.kind === 'hypothetical') {
-          const label = `HYPOTHETICAL · PATH ${cap.branch}`;
-          p.ctx.font = `800 26px sans-serif`;
-          const w = p.ctx.measureText(label).width + label.length * 3;
-          p.text(label, x, 28, { size: 26, weight: 800, color: C[cap.branch!], spacing: 3 });
-          x += w + 36;
-        } else if (cap.kind === 'context') {
-          p.text('CONTEXT', x, 28, { size: 26, weight: 800, color: C.ink2, spacing: 3 });
-          x += 170;
-        }
-        p.text(cap.speaker === 'You' ? 'You (hypothetical)' : cap.speaker, x, 28, { size: 26, weight: 700, color: C.ink2 });
+        const who =
+          cap.kind === 'context' ? 'CONTEXT' : cap.kind === 'hypothetical' ? (cap.speaker === 'You' ? 'YOU · HYPOTHETICAL LINE' : 'ALEX · FICTIONAL CONTINUATION') : cap.speaker.toUpperCase();
+        p.text(who, 40, 28, { size: 26, weight: 700, color: cap.kind === 'hypothetical' ? C[cap.branch!] : C.ink2, spacing: 3 });
         p.text(cap.text, 40, 72, { size: Math.round(44 * scale), maxW: p.W - 80, lh: Math.round(54 * scale) });
       });
     }
@@ -133,8 +121,10 @@ export class VRUI {
     if (P.quote.mesh.visible) {
       P.quote.set(`${s.phase}|${hc}`, (p) => {
         p.card(C.amber);
-        p.text(s.phase === 'UNFOLDED' ? 'ORIGINAL MOMENT · UNCHANGED' : 'ORIGINAL MOMENT', p.W / 2, 34, { size: 34, weight: 800, color: C.amber, align: 'center', spacing: 5 });
-        p.text(`“${ORIGINAL_LINE}”`, p.W / 2, 100, { size: 64, align: 'center', maxW: p.W - 80 });
+        p.text(s.phase === 'HELD' ? 'MOMENT HELD' : 'ORIGINAL MOMENT', p.W / 2, 26, { size: 32, weight: 800, color: C.amber, align: 'center', spacing: 5 });
+        p.text(`“${ORIGINAL_LINE}”`, p.W / 2, 78, { size: 60, align: 'center', maxW: p.W - 80 });
+        const sub = s.phase === 'HELD' ? 'Held by your therapist · original statement unchanged' : s.phase === 'UNFOLDED' ? 'Unchanged' : '';
+        if (sub) p.text(sub, p.W / 2, 160, { size: 30, align: 'center', color: C.ink2 });
       });
     }
 
@@ -144,29 +134,28 @@ export class VRUI {
       lab.mesh.visible = s.phase === 'UNFOLDED' && s.scene.panels[id] && !halted;
       if (!lab.mesh.visible) continue;
       const sel = s.selection === id;
-      lab.set(`${sel}|${hc}`, (p) => this.drawPath(p, id, sel));
+      const explored = s.visited.includes(id);
+      lab.set(`${sel}|${explored}|${hc}`, (p) => this.drawPath(p, id, sel, explored));
     }
 
-    // ---- side note ----
-    let note: [string, string] | null = null;
-    if (s.phase === 'HELD') note = ['Moment held', 'Your practitioner has held the scene exactly as it was. Nothing moves on until they continue.'];
-    else if (s.phase === 'UNFOLDED')
-      note = [
-        'Same room, two possibilities',
-        s.selection ? `You chose Path ${s.selection}. Your practitioner will begin it when ready.` : 'Two fictional possibilities, left and right. Not predictions. Point and pull the trigger to choose one.',
-      ];
-    else if (s.phase === 'RECOMPOSED')
-      note = ['Original moment restored', `You are back at the same moment. Explored so far: ${s.visited.map((v) => `Path ${v}`).join(', ') || 'none'}.`];
-    P.note.mesh.visible = !!note && !halted;
-    if (note) {
-      const [title, body] = note;
-      P.note.set(`${title}|${body}|${hc}|${PHASE_TITLE[s.phase]}`, (p) => {
-        p.card();
-        p.text(PHASE_TITLE[s.phase] ?? '', 34, 26, { size: 22, weight: 700, color: C.amber, spacing: 3, upper: true });
-        p.text(title, 34, 62, { size: 34, weight: 700, color: C.amberInk });
-        p.text(body, 34, 110, { size: 27, color: C.ink2, maxW: p.W - 68, lh: 36 });
-      });
-    }
+    // ---- brief "Original moment restored" confirmation ----
+    if (s.restoreCount > this.lastRestore && s.phase === 'RECOMPOSED') this.restoredAt = performance.now();
+    this.lastRestore = s.restoreCount;
+    if (s.phase !== 'RECOMPOSED') this.restoredAt = 0;
+    P.note.set(`restored|${hc}`, (p) => {
+      p.card(C.amber, 60);
+      p.text('Original moment restored', p.W / 2, 60, { size: 40, weight: 700, color: C.amberInk, align: 'center' });
+      p.text('Paths hidden · same view', p.W / 2, 130, { size: 30, color: C.ink2, align: 'center' });
+    });
+    P.note.mesh.visible = this.restoredAt > 0 && performance.now() - this.restoredAt < 3500 && !halted;
+
+    // ---- one-line hint while choosing ----
+    const hint = s.phase === 'UNFOLDED' ? (s.selection ? `Path ${s.selection} chosen — your therapist will begin it.` : 'Point at Path A or B and pull the trigger to choose.') : '';
+    P.hint.mesh.visible = !!hint && !halted;
+    if (hint) P.hint.set(`${hint}|${hc}`, (p) => {
+      p.card(C.border, 50);
+      p.text(hint, p.W / 2, 34, { size: 32, align: 'center', maxW: p.W - 60 });
+    });
 
     // ---- hypothetical badge while exploring ----
     const exploring = s.phase === 'EXPLORING' ? s.scene.hypotheticalLabel : null;
@@ -175,9 +164,8 @@ export class VRUI {
       const b = BRANCHES[exploring];
       P.badge.set(`${b.id}|${hc}`, (p) => {
         p.card(C[b.id]);
-        p.text(`HYPOTHETICAL · PATH ${b.id}`, 34, 30, { size: 28, weight: 800, color: C[b.id], spacing: 4 });
-        p.text(b.label, 34, 76, { size: 40, weight: 600 });
-        p.text('A fictional possibility — not what Alex actually intended.', 34, 140, { size: 26, color: C.ink2, maxW: p.W - 68 });
+        p.text(`HYPOTHETICAL · PATH ${b.id}`, 34, 30, { size: 32, weight: 800, color: C[b.id], spacing: 4 });
+        p.text(b.label, 34, 84, { size: 44, weight: 600 });
       });
     }
 
@@ -203,23 +191,18 @@ export class VRUI {
     P.fps.mesh.visible = this.showFps;
   }
 
-  private drawPath(p: CanvasPanel, id: BranchId, sel: boolean) {
+  /** Compact zone tag. The whole tag is the selectable target. States: hover, selected, explored. */
+  private drawPath(p: CanvasPanel, id: BranchId, sel: boolean, explored: boolean) {
     const b = BRANCHES[id];
-    p.card(C[id], 30);
-    if (sel) {
-      p.ctx.lineWidth = 12;
-      p.ctx.strokeStyle = C[id];
-      p.ctx.strokeRect(8, 8, p.W - 16, p.H - 16);
-    }
-    p.text(`HYPOTHETICAL · PATH ${id}`, 40, 36, { size: 40, weight: 800, color: C[id], spacing: 4 });
-    p.text(b.label, 40, 100, { size: 68, weight: 600, maxW: p.W - 80 });
-    p.text('One possible continuation', 40, 190, { size: 38, color: C.ink2 });
-    p.button(`path-${id}`, sel ? 'Selected · press to undo' : `Choose Path ${id}`, 40, p.H - 170, p.W - 80, 130, {
+    p.button(`path-${id}`, '', 4, 4, p.W - 8, p.H - 8, {
       selected: sel,
       color: C[id],
       onSelect: () => this.port.send(sel ? 'DESELECT' : 'SELECT', { branch: id }),
-      size: 46,
     });
+    p.text(`PATH ${id} · HYPOTHETICAL`, 36, 34, { size: 38, weight: 800, color: C[id], spacing: 3 });
+    p.text(b.label, 36, 98, { size: 72, weight: 600 });
+    const state = sel ? 'SELECTED' : explored ? 'EXPLORED ✓' : '';
+    if (state) p.text(state, 36, 252, { size: 36, weight: 800, color: C[id], spacing: 3 });
   }
 
   private drawMain(p: CanvasPanel, s: Session) {
@@ -232,10 +215,10 @@ export class VRUI {
       p.button(id, label, o.x ?? pad, p.H - 140, o.w ?? 420, 96, { onSelect, primary: o.primary ?? true, enabled: o.enabled, size: 38 });
 
     if (s.participantPaused || (s.linkHalted && isLive(s))) {
-      const title = s.participantPaused ? 'Paused' : 'Connection to your practitioner was lost';
+      const title = s.participantPaused ? 'Paused' : 'Connection to your therapist was lost';
       const body = s.linkHalted
         ? s.clinicianConnected
-          ? 'Your practitioner has reconnected and will continue when ready. You can leave at any time.'
+          ? 'Your therapist has reconnected and will continue when ready. You can leave at any time.'
           : 'The scene is paused and will not move on by itself. You can leave at any time.'
         : 'The scene is paused exactly where it was. Resume when you are ready, or leave.';
       p.text(title, pad, 60, { size: 54, serif: true, maxW: W - 2 * pad });
@@ -252,7 +235,7 @@ export class VRUI {
         p.text('Therapeutic Realms', pad, 100, { size: 76, serif: true });
         p.text('THE LIVING SCENE', pad, 200, { size: 28, spacing: 10, weight: 600 });
         p.text(
-          'A practitioner-guided prototype for looking at one ordinary conversation from more than one angle. You will meet Alex, a fictional colleague. A qualified practitioner guides the session from a separate desk.',
+          'A therapist-guided prototype for looking at one ordinary conversation from more than one angle. You will meet Alex, a fictional colleague. A qualified therapist guides the session from a separate desk.',
           pad, 270, { size: 32, color: C.ink2, maxW: W - 2 * pad },
         );
         p.text('Research prototype · not clinically validated · point and pull the trigger to select', pad, 520, { size: 24, color: C.ink2, maxW: W - 2 * pad });
@@ -267,21 +250,21 @@ export class VRUI {
           onSelect: () => send('ACKNOWLEDGE', { value: !s.acknowledged }),
           size: 32,
         });
-        p.text('This is a fictional, simulated conversation for reflective practice, guided by a qualified practitioner. Alex is a fictional colleague, not a therapist. I can pause or leave at any time.', pad, y + 104, { size: 25, color: C.ink2, maxW: W - 2 * pad, lh: 32 });
+        p.text('This is a fictional, simulated conversation for reflective practice, guided by a qualified therapist. Alex is a fictional colleague, not a therapist. I can pause or leave at any time.', pad, y + 104, { size: 25, color: C.ink2, maxW: W - 2 * pad, lh: 32 });
         bottomBtn('continue', 'Continue', () => send('CONTINUE'), { enabled: s.acknowledged });
         return;
       }
       case 'WAITING': {
         eyebrow('03 · Arrival');
-        p.text('Waiting for your practitioner', pad, 92, { size: 50, serif: true });
+        p.text('Waiting for your therapist', pad, 92, { size: 50, serif: true });
         const row = (ok: boolean, text: string, y: number) => {
           p.text(ok ? '✓' : '○', pad, y, { size: 38, color: ok ? '#a8e0b0' : C.ink2 });
           p.text(text, pad + 60, y + 2, { size: 34 });
         };
-        row(s.clinicianConnected, s.clinicianConnected ? 'Practitioner connected' : 'Practitioner not connected yet', 200);
-        row(s.participantReady, s.participantReady ? 'You are ready' : 'Tell your practitioner when you are ready', 270);
+        row(s.clinicianConnected, s.clinicianConnected ? 'Therapist connected' : 'Therapist not connected yet', 200);
+        row(s.participantReady, s.participantReady ? 'You are ready' : 'Tell your therapist when you are ready', 270);
         p.text(`Session code: ${s.sessionId}`, pad, 360, { size: 28, color: C.ink2 });
-        if (s.participantReady) p.text('The conversation will begin when your practitioner starts it. You do not need to do anything.', pad, 440, { size: 32, color: C.ink2, maxW: W - 2 * pad });
+        if (s.participantReady) p.text('The conversation will begin when your therapist starts it. You do not need to do anything.', pad, 440, { size: 32, color: C.ink2, maxW: W - 2 * pad });
         else bottomBtn('ready', 'I’m ready', () => send('READY'));
         return;
       }
@@ -303,7 +286,7 @@ export class VRUI {
         y = 520;
         p.text('Fictional possibilities written in advance — not predictions, and neither is a “right” answer.', pad, y, { size: 22, color: C.ink2, maxW: W - 2 * pad });
         p.text(REFLECTION_QUESTION, pad, y + 60, { size: 30, weight: 600, maxW: W - 2 * pad });
-        p.text('Talk it through with your practitioner. Leave is below whenever you want.', pad, y + 110, { size: 22, color: C.ink2 });
+        p.text('Talk it through with your therapist. Leave is below whenever you want.', pad, y + 110, { size: 22, color: C.ink2 });
         bottomBtn('leave-reflection', 'Leave', () => send('LEAVE'), { primary: false, w: 300 });
         return;
       }
@@ -311,7 +294,7 @@ export class VRUI {
       case 'ENDED':
         p.text(s.phase === 'LEFT' ? 'You have left the session' : 'Session ended', pad, 80, { size: 54, serif: true });
         p.text(
-          s.phase === 'LEFT' ? 'Nothing else will happen in this scene. You can take the headset off or exit VR.' : 'Your practitioner has ended the session.',
+          s.phase === 'LEFT' ? 'Nothing else will happen in this scene. You can take the headset off or exit VR.' : 'Your therapist has ended the session.',
           pad, 180, { size: 32, color: C.ink2, maxW: W - 2 * pad },
         );
         bottomBtn('exit-vr', 'Exit VR', () => this.port.exitVR());
@@ -359,6 +342,7 @@ export class VRUI {
 
   private fpsTick = 0;
   private frame() {
+    if (this.active && this.restoredAt && this.panels.note.mesh.visible && performance.now() - this.restoredAt > 3500) this.panels.note.mesh.visible = false;
     if (!this.showFps || !this.active) return;
     if (++this.fpsTick % 15) return;
     const ms = this.view.frameMs;
